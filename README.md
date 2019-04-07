@@ -63,21 +63,21 @@ Plasma is a 2nd layer scaling solution focusing on throughput improvement rather
 
 ## Requirements
 
-You need to install them before deploying Plasma Chamber contracts. 
+You need to install them before deploying Plasma Chamber contracts.
 
 * Node.js v8.11.3 or higher
     * You can install Node.js from here; https://nodejs.org/en/
 * ganache-cli latest version
-    * You need to install npm or Yarn first 
-    * how to install ganache-cli; https://github.com/trufflesuite/ganache-cli#installation 
+    * You need to install npm or Yarn first
+    * how to install ganache-cli; https://github.com/trufflesuite/ganache-cli#installation
 * Vyper 0.1.0b8
     * You need to install Python v3 or higher into your OS first (make sure to check the prerequisites on the official installation doc; https://vyper.readthedocs.io/en/latest/installing-vyper.html#prerequisites)
     * how to install Vyper; https://vyper.readthedocs.io/en/latest/installing-vyper.html#installation
 * Other package management tools / Ethereum testing framework
-    * npm 
+    * npm
     * lerna
-    * yarn 
-    * lerna bootstrap 
+    * yarn
+    * lerna bootstrap
     * truffle
 
 ## Deploy contracts
@@ -92,7 +92,7 @@ deploy contracts.
 ```sh
 npm i lerna yarn -g
 git clone https://github.com/cryptoeconomicslab/plasma-chamber
-cd plasma-chamber 
+cd plasma-chamber
 lerna bootstrap
 cd packages/contracts
 yarn build
@@ -206,7 +206,7 @@ The operator is able to set adhoc transaction verifiers and state verifiers. By 
 These properties are implemented as a Plasma Cash variant which supports fungibility of coins with range feature implemented by Sum Merkle Tree. At the same time, this design focuses on to utilize the security of original Plasma Cash design's robost security model to the maximum level.<br>
 
 ### Simple Exit Game
-Our simple exit game, a non-intereactive security model was implemented inspired by [simpler-exit-game-for-plasma-cash](https://ethresear.ch/t/a-simpler-exit-game-for-plasma-cash/4917), which does not allow any randome patter of malicious exit and Mass Exit problem. It makes Plasma Chamber resilient to rearrangement+Withholding attacks. Since multi round challenge-response is not required for full security anymore, coin-wise priority queue guarantees each end user's fund from the operator. Also, our Simple Exit Game can be compatible with our Range Chunking feature. <br>
+Our simple exit game, a non-intereactive security model was implemented inspired by [simpler-exit-game-for-plasma-cash](https://ethresear.ch/t/a-simpler-exit-game-for-plasma-cash/4917), which does not allow any random pattern of malicious exit and Mass Exit problem. It makes Plasma Chamber resilient to rearrangement+Withholding attacks. Since multi round challenge-response is not required for full security anymore, coin-wise priority queue guarantees each end user's fund from the operator. Also, our Simple Exit Game can be compatible with our Range Chunking feature. <br>
 See [Simple Exit Game](https://github.com/cryptoeconomicslab/plasma-chamber/wiki/Exit-Game) section for the source code.<br>
 
 ### Specific Exit Game for Custom Transactions
