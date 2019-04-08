@@ -52,7 +52,7 @@ const abi = [
 
 const ERC20abi = [
   'function approve(address _spender, uint256 _value) returns (bool)',
-  'function balanceOf(address tokenOwner) returns (uint)'
+  'function balanceOf(address tokenOwner) view returns (uint)'
 ]
 
 export class ChamberWallet extends EventEmitter {
