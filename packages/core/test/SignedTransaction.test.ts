@@ -93,10 +93,16 @@ describe('SignedTransaction', () => {
       const swapSegment2 = Segment.ETH(
         utils.bigNumberify('6000000'),
         utils.bigNumberify('7000000'))
+      const id = utils.keccak256(utils.hexlify(utils.concat([
+        utils.arrayify(swapSegment1.toBigNumber()),
+        utils.arrayify(swapSegment2.toBigNumber()),
+        utils.arrayify(AliceAddress),
+        utils.arrayify(BobAddress)
+      ])))        
       const stateUpdate1 = OwnershipPredicate.create(swapSegment1, blkNum1, predicate, AliceAddress)
       const stateUpdate2 = OwnershipPredicate.create(swapSegment2, blkNum1, predicate, BobAddress)
-      const newStateUpdate1 = PaymentChannelPredicate.create(swapSegment1, blkNum2, predicate, AliceAddress, BobAddress)
-      const newStateUpdate2 = PaymentChannelPredicate.create(swapSegment2, blkNum2, predicate, AliceAddress, BobAddress)
+      const newStateUpdate1 = PaymentChannelPredicate.create(swapSegment1, blkNum2, predicate, id, AliceAddress, BobAddress, 1)
+      const newStateUpdate2 = PaymentChannelPredicate.create(swapSegment2, blkNum2, predicate, id, AliceAddress, BobAddress, 2)
       const signedTx = new SignedTransaction([newStateUpdate1, newStateUpdate2])
       const signA = signedTx.justSign(AlicePrivateKey)
       const signB = signedTx.justSign(BobPrivateKey)

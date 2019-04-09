@@ -80,7 +80,7 @@ def decodePaymentChannelState(
     extract32(stateBytes, 32*6, type=uint256),  # index
   )
 
-@private
+@public
 @constant
 def canInitiateExit(
   _txHash: bytes32,

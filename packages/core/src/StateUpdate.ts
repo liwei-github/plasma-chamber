@@ -219,14 +219,16 @@ export class PaymentChannelPredicate {
     segment: Segment,
     blkNum: BigNumber,
     predicate: Address,
+    hash: string,
     participant1: Address,
-    participant2: Address
+    participant2: Address,
+    stateIndex: number
   ) {
     return new StateUpdate(
       segment,
       blkNum,
       predicate,
-      DecoderUtility.encode([participant1, participant2])
+      DecoderUtility.encode([hash, participant1, participant2, utils.bigNumberify(stateIndex).toHexString()])
     )
   }
 
