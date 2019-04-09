@@ -22,7 +22,8 @@ import {
   ChamberOk,
   SwapRequest,
   StateUpdate,
-  OwnershipPredicate
+  OwnershipPredicate,
+  PredicatesManager
 } from '@layer2/core'
 import { WalletErrorFactory } from './error'
 import { Exit, WaitingBlockWrapper, TokenType, UserAction, UserActionUtil } from './models'
@@ -31,7 +32,6 @@ import { BigNumber } from 'ethers/utils';
 import { PlasmaSyncher } from './client/PlasmaSyncher'
 import artifact from './assets/RootChain.json'
 import { SegmentHistoryManager } from './history/SegmentHistory';
-import { PredicatesManager } from '@layer2/core/src';
 if(!artifact.abi) {
   console.error('ABI not found')
 }
