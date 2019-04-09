@@ -1,10 +1,10 @@
+![Image](images/PC_logo.png)<br>
 
-# Plasma Chamber
 
 [![Build Status](https://travis-ci.org/cryptoeconomicslab/plasma-chamber.svg?branch=master)](https://travis-ci.org/cryptoeconomicslab/plasma-chamber)
 [![Coverage Status](https://coveralls.io/repos/github/cryptoeconomicslab/plasma-chamber/badge.svg?branch=master)](https://coveralls.io/github/cryptoeconomicslab/plasma-chamber?branch=master)
 
-Plasma Chamber is a toolset that guarantees security, scalability, and versatility of Dapps development on Plasma.
+Plasma Chamber is a DApps development framework that guarantees security, scalability, and usability utilizing Plasma technology.
 
 
 **IMPORTANT NOTICE:** <br>
@@ -13,7 +13,7 @@ Plasma Chamber is a toolset that guarantees security, scalability, and versatili
 * **Vyper contracts are [here](https://github.com/cryptoeconomicslab/plasma-chamber/tree/master/packages/contracts).**
 <br />
 
-**Table of Contents**
+## **Table of Contents**
 
 * [Introduction](#introduction)
 
@@ -57,7 +57,7 @@ Plasma Chamber is a toolset that guarantees security, scalability, and versatili
 Plasma Chamber is Cryptoeconomics Lab's first product that enables to generate General Purpose Plasma. Our implementation used [Plasma Cashflow](https://medium.com/plasma-group/plasma-spec-9d98d0f2fccf) design as its basis, but support more complex transactions for each decentralized application without sacrificing its security.
 
 # Overview
-Plasma is a 2nd layer scaling solution focusing on throughput improvement rather than quick finality. Plasma is not an EVM based, but a UTXO-model based scaling solution inheriting Ethereum blockchain's security. In other words, it aims to give a perfect fund safety, a transaction compression. Plasma is often times expected to be applied to several kinds of Dapps such as games, asset exchanges, etc. However, it requires production teams to employ expert Plasma researchers for careful security analysis in order to prepare their infrastructure. This causes duplicated research for each project, and security insights would not be shared sufficiently and efficiently amongst the projects. Hence, in order to solve this problem, Plasma Chamber is implemented to be a Dapp building framework without requiring domain-specific Plasma for each project.
+Plasma is often times expected to be applied to several kinds of Dapps such as games, asset exchanges, etc. However, it requires production teams to employ expert Plasma researchers for careful security analysis in order to prepare their infrastructure. This causes duplicated research for each project, and security insights would not be shared sufficiently and efficiently amongst the projects. Hence, in order to solve this problem, Plasma Chamber is implemented to be a DApp development framework without requiring domain-specific Plasma for each project.
 
 # Getting Started
 
@@ -188,10 +188,10 @@ Please also see more of our documents on Defragmentation form [here](https://scr
 Allows customers to have better user experience of transaction confirmation. The fast finality bandwidth is sold via Merchant PoS wallet.<br>
 
 ``Finality``<br>
-Finality means that once a transaction has been processed in a certain block, it will forever stay in history and nothing can revert that operation. This immutability of state transition will be especially important in the finance field.<br>
+Finality means that once a transaction has been processed in a certain block, it will forever stay in history and nothing can revert that operation. <br>
 
-Fast Finality function will only be available to limited third party service providers who hold wallets and control to transfer token values to users' wallets. Service clients can confirm their transaction's finality faster when the service providers buy Fast Finality Token from the operator (in this case, service providers are independent from the operator) and make a deal with them to include the transaction in a timely manner. In other words, the fast finality bandwidth is sold via merchandiser-wallet. If anything goes wrong within the network, service providers can challenge operators on the Fast Finality contract, claiming that the transaction was not included in the corresponding block.<br>
-See [Fast Finality](https://github.com/cryptoeconomicslab/plasma-chamber/wiki/Plasma-Fast-Finality) section for the source code of this Fast Finality contract. The rough specification is in [Learn Plasma - Research](https://www.learnplasma.org/en/research/). <br>
+Fast Finality function will only be available to limited third party service providers who hold wallets and authority to control trasferring token values to users' wallets. End-users of the service can get confirmation on their transaction's finality faster when the service provider buy Fast Finality Token from the operator (in this case, service providers are independent from the operator) and make a deal with the operator to include the transaction in a timely manner. In other words, the fast finality bandwidth is sold via merchandiser-wallet. If anything goes wrong within the network, service providers can challenge operators on the Fast Finality contract, claiming that the transaction was not included in the corresponding block.<br>
+See [Fast Finality](https://github.com/cryptoeconomicslab/plasma-chamber/wiki/Plasma-Fast-Finality) wiki page for the source code of this Fast Finality contract. The rough specification is in [Learn Plasma - Research](https://www.learnplasma.org/en/research/). <br>
 
 ### Checkpoint
 Reduces the transaction history that each end user has to hold. <br>
@@ -206,7 +206,7 @@ The operator is able to set adhoc transaction verifiers and state verifiers. By 
 These properties are implemented as a Plasma Cash variant which supports fungibility of coins with range feature implemented by Sum Merkle Tree. At the same time, this design focuses on to utilize the security of original Plasma Cash design's robost security model to the maximum level.<br>
 
 ### Simple Exit Game
-Our simple exit game, a non-intereactive security model was implemented inspired by [simpler-exit-game-for-plasma-cash](https://ethresear.ch/t/a-simpler-exit-game-for-plasma-cash/4917), which does not allow any randome patter of malicious exit and Mass Exit problem. It makes Plasma Chamber resilient to rearrangement+Withholding attacks. Since multi round challenge-response is not required for full security anymore, coin-wise priority queue guarantees each end user's fund from the operator. Also, our Simple Exit Game can be compatible with our Range Chunking feature. <br>
+Our simple exit game, a non-intereactive security model was implemented inspired by [simpler-exit-game-for-plasma-cash](https://ethresear.ch/t/a-simpler-exit-game-for-plasma-cash/4917), which does not allow any random pattern of malicious exit and Mass Exit problem. It makes Plasma Chamber resilient to rearrangement+Withholding attacks. Since multi round challenge-response is not required for full security anymore, coin-wise priority queue guarantees each end user's fund from the operator. Also, our Simple Exit Game can be compatible with our Range Chunking feature. <br>
 See [Simple Exit Game](https://github.com/cryptoeconomicslab/plasma-chamber/wiki/Exit-Game) section for the source code.<br>
 
 ### Specific Exit Game for Custom Transactions
