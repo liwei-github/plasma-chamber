@@ -63,21 +63,21 @@ Plasma is a 2nd layer scaling solution focusing on throughput improvement rather
 
 ## Requirements
 
-You need to install them before deploying Plasma Chamber contracts.
+You need to install them before deploying Plasma Chamber contracts. 
 
 * Node.js v8.11.3 or higher
     * You can install Node.js from here; https://nodejs.org/en/
 * ganache-cli latest version
-    * You need to install npm or Yarn first
-    * how to install ganache-cli; https://github.com/trufflesuite/ganache-cli#installation
+    * You need to install npm or Yarn first 
+    * how to install ganache-cli; https://github.com/trufflesuite/ganache-cli#installation 
 * Vyper 0.1.0b8
     * You need to install Python v3 or higher into your OS first (make sure to check the prerequisites on the official installation doc; https://vyper.readthedocs.io/en/latest/installing-vyper.html#prerequisites)
     * how to install Vyper; https://vyper.readthedocs.io/en/latest/installing-vyper.html#installation
 * Other package management tools / Ethereum testing framework
-    * npm
+    * npm 
     * lerna
-    * yarn
-    * lerna bootstrap
+    * yarn 
+    * lerna bootstrap 
     * truffle
 
 ## Deploy contracts
@@ -92,7 +92,7 @@ deploy contracts.
 ```sh
 npm i lerna yarn -g
 git clone https://github.com/cryptoeconomicslab/plasma-chamber
-cd plasma-chamber
+cd plasma-chamber 
 lerna bootstrap
 cd packages/contracts
 yarn build
