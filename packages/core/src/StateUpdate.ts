@@ -92,12 +92,17 @@ export class StateUpdate {
     deprecationWitness: string,
     predicatesManager: PredicatesManager
   ): boolean {
-    return predicatesManager.verifyDeprecation(
-      this.predicate,
-      hash,
-      this,
-      deprecationWitness,
-      newStateUpdate)
+    try {
+      return predicatesManager.verifyDeprecation(
+        this.predicate,
+        hash,
+        this,
+        deprecationWitness,
+        newStateUpdate)
+    } catch(e) {
+      console.warn("can't verify deprecation because", e)
+      return false
+    }
   }
 
   // spesific methods
