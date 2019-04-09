@@ -1,6 +1,6 @@
 {
   "name": "@layer2/cli",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "",
   "publishConfig": {
     "access": "public"
@@ -16,7 +16,7 @@
   "author": "Cryptoeconomics Lab",
   "license": "Apache-2.0",
   "dependencies": {
-    "@layer2/wallet": "^0.0.38",
+    "@layer2/wallet": "^0.0.39",
     "@types/leveldown": "^4.0.0",
     "@types/levelup": "^3.1.0",
     "commander": "^2.20.0",
