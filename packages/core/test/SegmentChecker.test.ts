@@ -56,6 +56,14 @@ describe('SegmentChecker', () => {
   signedTx4.sign(BobPrivateKey)
   const signedTx5 = new SignedTransaction([tx5])
   signedTx5.sign(BobPrivateKey)
+  const invalidTx = new SignedTransaction([tx1])
+
+  it('should fail to check contain', async () => {
+    const segmentChecker = new SegmentChecker(predicateManager)
+    const insertResults = segmentChecker.insert(signedTx1)
+    assert.deepEqual(insertResults, [true])
+    assert.isFalse(segmentChecker.isContain(invalidTx))
+  })
 
   it('should succeed to insert', async () => {
     const segmentChecker = new SegmentChecker(predicateManager)
