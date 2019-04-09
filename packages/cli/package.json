@@ -2,6 +2,12 @@
   "name": "@layer2/cli",
   "version": "0.0.38",
   "description": "",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "main": "index.js",
   "scripts": {
     "build": "tsc --build ./tsconfig.json",
