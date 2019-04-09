@@ -206,7 +206,7 @@ The operator is able to set adhoc transaction verifiers and state verifiers. By 
 These properties are implemented as a Plasma Cash variant which supports fungibility of coins with range feature implemented by Sum Merkle Tree. At the same time, this design focuses on to utilize the security of original Plasma Cash design's robost security model to the maximum level.<br>
 
 ### Simple Exit Game
-Our simple exit game, a non-intereactive security model was implemented inspired by [simpler-exit-game-for-plasma-cash](https://ethresear.ch/t/a-simpler-exit-game-for-plasma-cash/4917), which does not allow any randome patter of malicious exit and Mass Exit problem. It makes Plasma Chamber resilient to rearrangement+Withholding attacks. Since multi round challenge-response is not required for full security anymore, coin-wise priority queue guarantees each end user's fund from the operator. Also, our Simple Exit Game can be compatible with our Range Chunking feature. <br>
+Our simple exit game, a non-intereactive security model was implemented inspired by [simpler-exit-game-for-plasma-cash](https://ethresear.ch/t/a-simpler-exit-game-for-plasma-cash/4917), which does not allow any random pattern of malicious exit and Mass Exit problem. It makes Plasma Chamber resilient to rearrangement+Withholding attacks. Since multi round challenge-response is not required for full security anymore, coin-wise priority queue guarantees each end user's fund from the operator. Also, our Simple Exit Game can be compatible with our Range Chunking feature. <br>
 See [Simple Exit Game](https://github.com/cryptoeconomicslab/plasma-chamber/wiki/Exit-Game) section for the source code.<br>
 
 ### Specific Exit Game for Custom Transactions
