@@ -1,0 +1,117 @@
+import {
+  ChamberWallet,
+  JsonRpcClient,
+  PlasmaClient,
+  WalletMQTTClient
+} from '@layer2/wallet'
+import { FileStorage } from './storage'
+import program from 'commander'
+import fs from 'fs'
+import path from 'path'
+import { utils } from 'ethers'
+
+function getPrivateKey(): string {
+  const privateKey = process.env.PRIVATE_KEY
+  if(privateKey) {
+    return privateKey
+  } else {
+    throw new Error('private key nor defined')
+  }
+}
+
+const childChainEndpoint = process.env.CHILDCHAIN_ENDPOINT || 'http://localhost:3000'
+const jsonRpcClient = new JsonRpcClient(childChainEndpoint)
+const client = new PlasmaClient(jsonRpcClient, new WalletMQTTClient(process.env.CHILDCHAIN_PUBSUB_ENDPOINT || childChainEndpoint))
+const privateKey = getPrivateKey()
+const address = utils.computeAddress(privateKey)
+const options = {
+  // kovan
+  // initialBlock: 10000000,
+  initialBlock: process.env.INITIAL_BLOCK || 1,
+  interval: 20000,
+  confirmation: process.env.CONFIRMATION || 0
+}
+const basePath = path.join(__dirname, './.clidb')
+const persnalPath = path.join(basePath, address)
+if (!fs.existsSync(basePath)) {
+  fs.mkdirSync(basePath);
+}
+if (!fs.existsSync(persnalPath)) {
+  fs.mkdirSync(persnalPath);
+}
+const storage = new FileStorage(persnalPath)
+const wallet = ChamberWallet.createWalletWithPrivateKey(
+  client,
+  process.env.ROOTCHAIN_ENDPOINT || 'http://127.0.0.1:8545',
+  process.env.ROOTCHAIN_ADDRESS || '0xeec918d74c746167564401103096D45BbD494B74',
+  storage,
+  privateKey,
+  options
+)
+
+program
+  .version('0.0.37')
+  .parse(process.argv)
+
+program
+  .command('balance')
+  .action(async function(options) {
+    await balance()
+    console.log('finished')
+  })
+
+program
+  .command('deposit')
+  .option('-v, --value <value>', 'amount to deposit')
+  .action(async function(options) {
+    await deposit(options.to)
+    console.log('finished')
+  })
+
+program
+  .command('transfer')
+  .option('-t, --to <toAddress>', 'to address')
+  .option('-v, --value <value>', 'amount to transfer')
+  .action(async function(options) {
+    await transfer(options.to, options.value)
+    console.log('finished')
+  })
+
+program.parse(process.argv)
+
+
+async function deposit(amount: string) {
+  await wallet.init()
+  console.log('wallet initialized')
+  const result = await wallet.deposit(amount)
+  console.log(result)
+}
+
+async function transfer(to: string, amount: string) {
+  console.log(to, amount)
+  await wallet.init()
+  console.log('wallet initialized')
+  await wallet.syncChildChain()
+  console.log('wallet synced')
+  const result = await wallet.transfer(to, 0, amount)
+  console.log(result)
+  console.log(`transfered ${amount} GWEI to ${to}.`)
+  wallet.on('send', async (e) => {
+    const result = await wallet.getBalance()
+    console.log('sent')
+    console.log(result.toNumber())
+  })
+}
+
+async function balance() {
+  wallet.on('updated', async (e) => {
+    const result = await e.wallet.getBalance()
+    console.log(result.toNumber())
+  })
+  await wallet.init()
+  console.log('wallet initialized')
+  await wallet.syncChildChain()
+  console.log('wallet synced')
+  const result = await wallet.getBalance()
+  console.log('balance=', result.toNumber())
+}
