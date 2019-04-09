@@ -5,6 +5,7 @@ import {
   WalletMQTTClient
 } from '@layer2/wallet'
 import { FileStorage } from './storage'
+import program from 'commander'
 import fs from 'fs'
 import path from 'path'
 import { utils } from 'ethers'
@@ -48,33 +49,46 @@ const wallet = ChamberWallet.createWalletWithPrivateKey(
   options
 )
 
-const cmd = process.argv[2]
+program
+  .version('0.0.37')
+  .parse(process.argv)
 
-if(cmd) {
-  if(cmd == 'balance') {
-    balance().then(() => {
-      console.log('finished')
-    })
-  }else if(cmd == 'deposit') {
-    deposit().then(() => {
-      console.log('finished')
-    })
-  }else if(cmd == 'transfer') {
-    const to = process.argv[3]
-    transfer(to, '100').then(() => {
-      console.log('finished')
-    })
-  }
-}
+program
+  .command('balance')
+  .action(async function(options) {
+    await balance()
+    console.log('finished')
+  })
 
-async function deposit() {
+program
+  .command('deposit')
+  .option('-v, --value <value>', 'amount to deposit')
+  .action(async function(options) {
+    await deposit(options.to)
+    console.log('finished')
+  })
+
+program
+  .command('transfer')
+  .option('-t, --to <toAddress>', 'to address')
+  .option('-v, --value <value>', 'amount to transfer')
+  .action(async function(options) {
+    await transfer(options.to, options.value)
+    console.log('finished')
+  })
+
+program.parse(process.argv)
+
+
+async function deposit(amount: string) {
   await wallet.init()
   console.log('wallet initialized')
-  const result = await wallet.deposit('1.0')
+  const result = await wallet.deposit(amount)
   console.log(result)
 }
 
 async function transfer(to: string, amount: string) {
+  console.log(to, amount)
   await wallet.init()
   console.log('wallet initialized')
   await wallet.syncChildChain()
@@ -99,5 +113,5 @@ async function balance() {
   await wallet.syncChildChain()
   console.log('wallet synced')
   const result = await wallet.getBalance()
-  console.log(result.toNumber())
+  console.log('balance=', result.toNumber())
 }
