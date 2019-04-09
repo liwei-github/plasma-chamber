@@ -44,6 +44,10 @@ describe('ChamberWallet', () => {
   const mockClient = new MockNetworkClient()
   const client = new PlasmaClient(mockClient, new MockPubsubClient())
   let storage = new MockStorage()
+  const predicate = AliceAddress
+  const options = {
+    OwnershipPredicate: predicate
+  }
 
   beforeEach(() => {
     storage = new MockStorage()
@@ -56,6 +60,7 @@ describe('ChamberWallet', () => {
       ContractAddress,
       storage,
       AlicePrivateKey,
+      options
     )
     assert.equal(wallet.getBalance().toNumber(), 0)
   })
@@ -69,7 +74,9 @@ describe('ChamberWallet', () => {
       ContractAddress,
       storage,
       AlicePrivateKey,
+      options
     )
+    wallet.setPredicate('OwnershipPredicate', predicate)
 
     it('should handleDeposit', () => {
       wallet.handleDeposit(
@@ -92,7 +99,9 @@ describe('ChamberWallet', () => {
       ContractAddress,
       storage,
       AlicePrivateKey,
+      options
     )
+    wallet.setPredicate('OwnershipPredicate', predicate)
 
     it('should getExit', () => {
       const blkNum = utils.bigNumberify(2)
@@ -106,7 +115,7 @@ describe('ChamberWallet', () => {
 
       wallet.handleExit(
         utils.bigNumberify(1),
-        depositTx.getOutput().withBlkNum(blkNum).hash(),
+        depositTx.hash(),
         utils.bigNumberify(1520700),
         utils.bigNumberify(10000000)
       )
@@ -125,6 +134,7 @@ describe('ChamberWallet', () => {
       storage,
       AlicePrivateKey,
     )
+    wallet.setPredicate('OwnershipPredicate', predicate)
 
     it('should transfer', async () => {
       wallet.handleDeposit(

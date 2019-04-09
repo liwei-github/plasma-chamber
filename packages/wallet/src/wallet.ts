@@ -12,20 +12,17 @@ import {
   Address,
   constants,
   ExitableRangeManager,
-  SplitTransaction,
   SignedTransaction,
   SignedTransactionWithProof,
   Block,
-  DepositTransaction,
-  MergeTransaction,
   Segment,
   SumMerkleProof,
   ChamberResult,
   ChamberResultError,
   ChamberOk,
   SwapRequest,
-  SwapTransaction,
-  TransactionOutput
+  StateUpdate,
+  OwnershipPredicate
 } from '@layer2/core'
 import { WalletErrorFactory } from './error'
 import { Exit, WaitingBlockWrapper, TokenType, UserAction, UserActionUtil } from './models'
@@ -34,6 +31,7 @@ import { BigNumber } from 'ethers/utils';
 import { PlasmaSyncher } from './client/PlasmaSyncher'
 import artifact from './assets/RootChain.json'
 import { SegmentHistoryManager } from './history/SegmentHistory';
+import { PredicatesManager } from '@layer2/core/src';
 if(!artifact.abi) {
   console.error('ABI not found')
 }
@@ -41,11 +39,11 @@ if(!artifact.abi) {
 const abi = [
   'event BlockSubmitted(bytes32 _superRoot, bytes32 _root, uint256 _timestamp, uint256 _blkNum)',
   'event Deposited(address indexed _depositer, uint256 _tokenId, uint256 _start, uint256 _end, uint256 _blkNum)',
-  'event ExitStarted(address indexed _exitor, uint256 _exitId, uint256 exitableAt, uint256 _segment, uint256 _blkNum, bool _isForceInclude)',
+  'event ExitStarted(address indexed _exitor, uint256 _exitId, uint256 exitableAt, uint256 _segment, uint256 _blkNum)',
   'event FinalizedExit(uint256 _exitId, uint256 _tokenId, uint256 _start, uint256 _end)',
   'function deposit() payable',
   'function depositERC20(address token, uint256 amount) payable',
-  'function exit(uint256 _utxoPos, uint256 _segment, bytes _txBytes, bytes _proof, bytes _sig, uint256 _hasSig) payable',
+  'function exit(uint256 _utxoPos, uint256 _segment, bytes _txBytes, bytes _proof) payable',
   'function finalizeExit(uint256 _exitableEnd, uint256 _exitId)',
   'function getExit(uint256 _exitId) constant returns(address, uint256)',
 ]
@@ -68,6 +66,7 @@ export class ChamberWallet extends EventEmitter {
   private options: any
   private segmentHistoryManager: SegmentHistoryManager
   public isMerchant: boolean
+  private predicatesManager: PredicatesManager
 
   /**
    * 
@@ -207,10 +206,16 @@ export class ChamberWallet extends EventEmitter {
         e.values._blkNum
       )
     })
-    this.segmentHistoryManager = new SegmentHistoryManager(storage, this.client)
+    this.predicatesManager = new PredicatesManager()
+    this.predicatesManager.addPredicate(this.options.OwnershipPredicate, 'OwnershipPredicate')
+    this.segmentHistoryManager = new SegmentHistoryManager(storage, this.client, this.predicatesManager)
     this.plasmaSyncher.on('PlasmaBlockHeaderAdded', (e: any) => {
       this.segmentHistoryManager.appendBlockHeader(e.blockHeader as WaitingBlockWrapper)
     })
+  }
+
+  setPredicate(name: string, predicate: Address) {
+    this.predicatesManager.addPredicate(predicate, name)
   }
 
   /**
@@ -240,6 +245,17 @@ export class ChamberWallet extends EventEmitter {
     return await this.client.getBlockNumber()
   }
 
+  getPlasmaBlockNumber() {
+    return this.loadedBlockNumber
+  }
+
+  /**
+   * get current targetBlock
+   */
+  getTargetBlockNumber() {
+    return this.loadedBlockNumber + 3
+  }
+
   async syncChildChain(): Promise<SignedTransactionWithProof[]> {
     await this.plasmaSyncher.sync(async (block: Block) => {
       await this.updateBlock(block)
@@ -250,17 +266,20 @@ export class ChamberWallet extends EventEmitter {
   /**
    * @ignore
    */
-  private _spend(txo: TransactionOutput): boolean {
+  private _spend(newTx: SignedTransactionWithProof, newStateUpdate: StateUpdate): boolean {
     return this.getUTXOArray().filter((tx) => {
-      const output = tx.getOutput()
-      if(output.isSpent(txo)) {
-        this.storage.deleteUTXO(output.hash())
-        tx.spend(txo).forEach(newTx => {
+      if(tx.getOutput().verifyDeprecation(
+        newTx.getTxHash(),
+        newStateUpdate,
+        newTx.getTransactionWitness(),
+        this.predicatesManager
+      )) {
+        this.storage.deleteUTXO(tx.getOutput().hash())
+        tx.spend(newStateUpdate).forEach(newTx => {
           this.storage.addUTXO(newTx)
         })
-        return true
       }
-      return false
+      return true
     }).length > 0
   }
 
@@ -269,34 +288,28 @@ export class ChamberWallet extends EventEmitter {
    */
   private updateBlock(block: Block) {
     this.getUTXOArray().forEach((tx) => {
-      const segmentedBlock = block.getSegmentedBlock(tx.getOutput().getSegment(0))
+      const segmentedBlock = block.getSegmentedBlock(tx.getOutput().getSegment())
       const key = tx.getOutput().hash()
       this.segmentHistoryManager.appendSegmentedBlock(key, segmentedBlock).then(()=>{
         
       })
     })
-    const tasks = block.getUserTransactionAndProofs(this.wallet.address).map(async tx => {
-      tx.signedTx.getAllInputs().forEach(input => {
-        if(this._spend(input)) {
+    const tasks = block.getUserTransactionAndProofs(this.wallet.address, this.predicatesManager).map(async tx => {
+      tx.getSignedTx().getStateUpdates().forEach(stateUpdate => {
+        if(this._spend(tx, stateUpdate)) {
           this.emit('send', {tx: tx})
-	        this.storage.addUserAction(tx.blkNum.toNumber(), UserActionUtil.createSend(tx))
+          this.storage.addUserAction(tx.blkNum.toNumber(), UserActionUtil.createSend(tx))
         }
       })
-      if(tx.getOutput().getOwners().indexOf(this.wallet.address) >= 0) {
+      if(tx.getOutput().isOwnedBy(this.wallet.address, this.predicatesManager)) {
         this.segmentHistoryManager.init(
           tx.getOutput().hash(),
-          tx.getOutput().getSegment(0))
+          tx.getOutput().getSegment())
         const verified = await this.verifyHistory(tx)
         if(verified) {
           this.storage.addUTXO(tx)
           this.emit('receive', {tx: tx})
           this.storage.addUserAction(tx.blkNum.toNumber(), UserActionUtil.createReceive(tx))
-          // require confirmation signature?
-          if(tx.requireConfsig()) {
-            tx.confirmMerkleProofs(this.wallet.privateKey)
-            // send back to operator
-            return this.client.sendConfsig(tx)
-          }
         }
       }
     }).filter(p => !!p)
@@ -320,26 +333,27 @@ export class ChamberWallet extends EventEmitter {
   handleDeposit(depositor: string, tokenId: BigNumber, start: BigNumber, end: BigNumber, blkNum: BigNumber) {
     const depositorAddress = ethers.utils.getAddress(depositor)
     const segment = new Segment(tokenId, start, end)
-    const depositTx = new DepositTransaction(
+    const depositTx = OwnershipPredicate.create(
+      segment,
+      blkNum,
+      this.predicatesManager.getNativePredicate('OwnershipPredicate'),
       depositorAddress,
-      segment
     )
     if(depositorAddress === this.getAddress()) {
       this.segmentHistoryManager.init(
-        depositTx.getOutput().withBlkNum(blkNum).hash(),
+        depositTx.hash(),
         segment)
       this.storage.addUTXO(new SignedTransactionWithProof(
         new SignedTransaction([depositTx]),
-        0,
         0,
         '0x',
         '0x',
         ethers.constants.Zero,
         // 0x00000050 is header. 0x0050 is size of deposit transaction
-        new SumMerkleProof(1, 0, segment, '', '0x00000050'),
+        [new SumMerkleProof(1, 0, segment, '', '0x00000050')],
         blkNum))
     }
-    this.segmentHistoryManager.appendDeposit(blkNum.toNumber(), depositTx)
+    this.segmentHistoryManager.appendDeposit(depositTx)
     this.exitableRangeManager.extendRight(end)
     this.storage.saveExitableRangeManager(this.exitableRangeManager)
     this.emit('deposited', { wallet: this, tx: depositTx})
@@ -401,8 +415,8 @@ export class ChamberWallet extends EventEmitter {
   getUTXOArray(): SignedTransactionWithProof[] {
     let arr = this.storage.getUTXOList()
     arr.sort((a: SignedTransactionWithProof, b: SignedTransactionWithProof) => {
-      const aa = a.getOutput().getSegment(0).start
-      const bb = b.getOutput().getSegment(0).start
+      const aa = a.getOutput().getSegment().start
+      const bb = b.getOutput().getSegment().start
       if(aa.gt(bb)) return 1
       else if(aa.lt(bb)) return -1
       else return 0
@@ -426,9 +440,9 @@ export class ChamberWallet extends EventEmitter {
     const tokenId = _tokenId || 0
     let balance = ethers.utils.bigNumberify(0)
     this.getUTXOArray().forEach((tx) => {
-      const segment = tx.getOutput().getSegment(0)
+      const segment = tx.getOutput().getSegment()
       if(segment.getTokenId().toNumber() == tokenId) {
-        balance = balance.add(tx.getOutput().getSegment(0).getAmount())
+        balance = balance.add(tx.getOutput().getSegment().getAmount())
       }
     })
     return balance
@@ -454,7 +468,7 @@ export class ChamberWallet extends EventEmitter {
     }
   }
 
-   private async _deposit(result: any): Promise<ChamberResult<DepositTransaction>> {
+   private async _deposit(result: any): Promise<ChamberResult<StateUpdate>> {
     await result.wait()
     const receipt = await this.httpProvider.getTransactionReceipt(result.hash)
     if(receipt.logs && receipt.logs[0]) {
@@ -478,7 +492,7 @@ export class ChamberWallet extends EventEmitter {
    * 
    * @param ether 1.0
    */
-  async deposit(ether: string): Promise<ChamberResult<DepositTransaction>> {
+  async deposit(ether: string): Promise<ChamberResult<StateUpdate>> {
     const result = await this.rootChainContract.deposit({
       value: ethers.utils.parseEther(ether)
     })
@@ -490,7 +504,7 @@ export class ChamberWallet extends EventEmitter {
    * @param token token address
    * @param amount 
    */
-  async depositERC20(token: Address, amount: number): Promise<ChamberResult<DepositTransaction>> {
+  async depositERC20(token: Address, amount: number): Promise<ChamberResult<StateUpdate>> {
     const contract = new ethers.Contract(token, ERC20abi, this.httpProvider)
     const ERC20 = contract.connect(this.wallet)
     const resultApprove = await ERC20.approve(this.rootChainContract.address, amount)
@@ -503,12 +517,10 @@ export class ChamberWallet extends EventEmitter {
 
   async exit(tx: SignedTransactionWithProof): Promise<ChamberResult<Exit>> {
     const result = await this.rootChainContract.exit(
-      tx.blkNum.mul(100).add(tx.outputIndex),
-      tx.getOutput().getSegment(0).toBigNumber(),
+      tx.blkNum.mul(100),
+      tx.getOutput().getSegment().toBigNumber(),
       tx.getTxBytes(),
       tx.getProofAsHex(),
-      tx.getSignatures(),
-      0,
       {
       value: constants.EXIT_BOND
     })
@@ -560,24 +572,25 @@ export class ChamberWallet extends EventEmitter {
     fee?: BigNumber
   ): SignedTransaction | null {
     let tx: SignedTransaction | null = null
+    const targetBlock = ethers.utils.bigNumberify(this.getTargetBlockNumber())
     this.getUTXOArray()
-    .filter(_tx => _tx.getOutput().getSegment(0).getTokenId().eq(tokenId))
+    .filter(_tx => _tx.getOutput().getSegment().getTokenId().eq(tokenId))
     .forEach((_tx) => {
       const output = _tx.getOutput()
-      const segment = output.getSegment(0)
+      const segment = output.getSegment()
       const sum = amount.add(fee || 0)
       if(segment.getAmount().gte(sum)) {
-        const paymentTx = new SplitTransaction(
-          this.wallet.address,
+        const paymentTx = OwnershipPredicate.create(
           new Segment(segment.getTokenId(), segment.start, segment.start.add(amount)),
-          _tx.blkNum,
+          targetBlock,
+          this.predicatesManager.getNativePredicate('OwnershipPredicate'),
           to)
         if(feeTo && fee) {
           const feeStart = segment.start.add(amount)
-          const feeTx = new SplitTransaction(
-            this.wallet.address,
+          const feeTx = OwnershipPredicate.create(
             new Segment(segment.getTokenId(), feeStart, feeStart.add(fee)),
-            _tx.blkNum,
+            targetBlock,
+            this.predicatesManager.getNativePredicate('OwnershipPredicate'),
             feeTo)
           tx = new SignedTransaction([paymentTx, feeTx])
         } else {
@@ -588,23 +601,21 @@ export class ChamberWallet extends EventEmitter {
     return tx
   }
 
-  searchMergable(): MergeTransaction | null {
+  searchMergable(blkNum: BigNumber): StateUpdate | null {
     let tx = null
     let segmentEndMap = new Map<string, SignedTransactionWithProof>()
     this.getUTXOArray().forEach((_tx) => {
-      const segment = _tx.getOutput().getSegment(0)
+      const segment = _tx.getOutput().getSegment()
       const start = segment.start.toString()
       const end = segment.end.toString()
       const tx2 = segmentEndMap.get(start)
       if(tx2) {
         // _tx and segmentStartMap.get(start) are available for merge transaction
-        tx = new MergeTransaction(
-          this.wallet.address,
-          tx2.getOutput().getSegment(0),
-          segment,
-          this.wallet.address,
-          tx2.blkNum,
-          _tx.blkNum
+        tx = OwnershipPredicate.create(
+          tx2.getOutput().getSegment(),
+          blkNum,
+          this.predicatesManager.getNativePredicate('OwnershipPredicate'),
+          this.wallet.address
         )
       }
       segmentEndMap.set(end, _tx)
@@ -618,14 +629,14 @@ export class ChamberWallet extends EventEmitter {
   private makeSwapRequest(): SwapRequest | null {
     let swapRequest = null
     this.getUTXOArray().forEach((txNeighbor) => {
-      const neighbor = txNeighbor.getOutput().getSegment(0)
+      const neighbor = txNeighbor.getOutput().getSegment()
       const txs = this.searchHole(neighbor)
       if(txs.length > 0) {
         const output = txs[0].getOutput()
         swapRequest = new SwapRequest(
-          output.getOwners()[0],
+          output.getOwner(),
           output.getBlkNum(),
-          output.getSegment(0),
+          output.getSegment(),
           txNeighbor.getOutput().getBlkNum(),
           neighbor)
       }
@@ -635,24 +646,29 @@ export class ChamberWallet extends EventEmitter {
 
   private searchHole(neighbor: Segment) {
     return this.getUTXOArray().filter((_tx) => {
-      const segment = _tx.getOutput().getSegment(0)
+      const segment = _tx.getOutput().getSegment()
       return neighbor.end.lt(segment.start)
     })
   }
 
-  private searchNeighbors(swapRequest: SwapRequest) {
+  private searchNeighbors(swapRequest: SwapRequest): StateUpdate[] {
     return this.getUTXOArray().filter((_tx) => {
-      const segment = _tx.getOutput().getSegment(0)
+      const segment = _tx.getOutput().getSegment()
       return swapRequest.check(segment)
     }).map(s => s.getOutput())
   }
 
-  private checkSwapTx(swapTx: SwapTransaction) {
-    const input = swapTx.getInputByOwner(this.getAddress())
+  private checkSwapTx(swapTx: SignedTransaction) {
+    const input = swapTx.getStateUpdates().filter(i => i.getOwner() == this.getAddress())[0]
     if(input) {
       return this.getUTXOArray().filter((_tx) => {
         // check input spent _tx which user has
-        return _tx.getOutput().isSpent(input)
+        return _tx.getOutput().verifyDeprecation(
+          swapTx.hash(),
+          input,
+          swapTx.getTransactionWitness(),
+          this.predicatesManager
+        )
       }).length > 0
     } else {
       return false
@@ -741,7 +757,8 @@ export class ChamberWallet extends EventEmitter {
   }
 
   async merge() {
-    const tx = this.searchMergable()
+    const targetBlock = ethers.utils.bigNumberify(this.getTargetBlockNumber())
+    const tx = this.searchMergable(targetBlock)
     if(tx == null) {
       return new ChamberResultError(WalletErrorFactory.TooLargeAmount())
     }
@@ -760,6 +777,8 @@ export class ChamberWallet extends EventEmitter {
   }
 
   async swapRequestRespond() {
+    const targetBlock = ethers.utils.bigNumberify(this.getTargetBlockNumber())
+    const ownershipPredicateAddress = this.predicatesManager.getNativePredicate('OWnershipPredicate')
     let swapRequests = await this.client.getSwapRequest()
     if(swapRequests.isError()) {
       return new ChamberResultError(WalletErrorFactory.SwapRequestError())
@@ -777,7 +796,7 @@ export class ChamberWallet extends EventEmitter {
     .filter(swapRequest => !!swapRequest)
     .map(swapRequest => {
       if(swapRequest) {
-        const tx = swapRequest.getSignedSwapTx()
+        const tx = swapRequest.getSignedSwapTx(targetBlock, ownershipPredicateAddress)
         if(tx) {
           tx.sign(this.wallet.privateKey)
           return this.client.swapRequestResponse(swapRequest.getOwner(), tx)
@@ -792,7 +811,7 @@ export class ChamberWallet extends EventEmitter {
     const swapTxResult = await this.client.getSwapRequestResponse(this.getAddress())
     if(swapTxResult.isOk()) {
       const swapTx = swapTxResult.ok()
-      if(this.checkSwapTx(swapTx.getRawTx(0) as SwapTransaction)) {
+      if(this.checkSwapTx(swapTx)) {
         swapTx.sign(this.wallet.privateKey)
         const result = await this.client.sendTransaction(swapTx)
         if(result.isOk()) {

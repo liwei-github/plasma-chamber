@@ -12,9 +12,9 @@ const RootChain = artifacts.require("RootChain")
 const Checkpoint = artifacts.require("Checkpoint")
 const CustomVerifier = artifacts.require("CustomVerifier")
 const VerifierUtil = artifacts.require("VerifierUtil")
-const OwnStateVerifier = artifacts.require("OwnStateVerifier")
-const StandardVerifier = artifacts.require("StandardVerifier")
-const SwapVerifier = artifacts.require("SwapVerifier")
+const OwnershipPredicate = artifacts.require("OwnershipPredicate")
+const PaymentChannelPredicate = artifacts.require("SwapChannelPredicate")
+const Serializer = artifacts.require("Serializer")
 const ERC721 = artifacts.require("ERC721")
 const ethers = require('ethers')
 const utils = ethers.utils
@@ -55,26 +55,19 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
     this.erc721 = await ERC721.new()
     this.checkpoint = await Checkpoint.new({ from: operator })
     this.verifierUtil = await VerifierUtil.new({ from: operator })
-    this.ownStateVerifier = await OwnStateVerifier.new(
+    this.ownershipPredicate = await OwnershipPredicate.new(
       this.verifierUtil.address, { from: operator })
-    this.standardVerifier = await StandardVerifier.new(
-      this.verifierUtil.address,
-      this.ownStateVerifier.address,
-      { from: operator })
-    this.swapVerifier = await SwapVerifier.new(
-      this.verifierUtil.address,
-      this.ownStateVerifier.address,
-      { from: operator })
+    this.serializer = await Serializer.new({ from: operator })
     this.customVerifier = await CustomVerifier.new(
       this.verifierUtil.address,
-      this.ownStateVerifier.address,
+      this.ownershipPredicate.address,
       {
         from: operator
       })
-    await this.customVerifier.addVerifier(this.standardVerifier.address, {from: operator})
-    await this.customVerifier.addVerifier(this.swapVerifier.address, {from: operator})
+    await this.customVerifier.registerPredicate(this.ownershipPredicate.address, {from: operator})
     this.rootChain = await RootChain.new(
       this.verifierUtil.address,
+      this.serializer.address,
       this.customVerifier.address,
       this.erc721.address,
       this.checkpoint.address,
@@ -82,6 +75,11 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
         from: operator
       })
     await this.rootChain.setup()
+    this.paymentChannelPredicate = await PaymentChannelPredicate.new(
+      this.verifierUtil.address,
+      this.rootChain.address,
+      { from: operator })
+    await this.customVerifier.registerPredicate(this.paymentChannelPredicate.address, {from: operator})
     await this.checkpoint.setRootChain(
       this.rootChain.address,
       {
@@ -152,8 +150,6 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
         Scenario1.segments[0].toBigNumber(),
         tx.getTxBytes(),
         tx.getProofAsHex(),
-        tx.getSignatures(),
-        0,
         {
           from: bob,
           value: EXIT_BOND
@@ -168,7 +164,6 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
         Scenario1.segments[0].toBigNumber(),
         lastTx.getTxBytes(),
         lastTx.getProofAsHex(),
-        lastTx.getSignatures(),
         {
           from: operator
         });
@@ -189,8 +184,6 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
         Scenario1.segments[0].toBigNumber(),
         tx.getTxBytes(),
         tx.getProofAsHex(),
-        tx.getSignatures(),
-        0,
         {
           from: bob,
           value: EXIT_BOND
@@ -201,6 +194,7 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
       await this.rootChain.finalizeExit(
         exitableEnd,
         exitId,
+        tx.getStateBytes(),
         {
           from: bob
         });
@@ -246,8 +240,6 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
         Scenario1.segments[0].toBigNumber(),
         tx.getTxBytes(),
         tx.getProofAsHex(),
-        tx.getSignatures(),
-        0,
         {
           from: bob,
           value: EXIT_BOND
@@ -258,6 +250,7 @@ contract("Checkpoint", ([alice, bob, operator, user4, user5, admin]) => {
       await this.rootChain.finalizeExit(
         exitableEnd,
         exitId,
+        tx.getStateBytes(),
         {
           from: bob
         });

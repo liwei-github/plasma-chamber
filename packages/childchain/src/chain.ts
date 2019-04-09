@@ -3,18 +3,17 @@ import {
   ChamberResult,
   ChamberOk,
   ChamberResultError,
-  DepositTransaction,
   SignedTransaction,
   Block,
+  PredicatesManager, OwnershipPredicate, Address,
   Segment,
   SegmentChecker,
-  SignedTransactionWithProof,
-  SplitTransaction
+  SignedTransactionWithProof
 } from '@layer2/core'
 import { ChainErrorFactory } from './error'
 import { constants, utils } from 'ethers';
 import BigNumber = utils.BigNumber
-import { SwapManager } from './SwapManager';
+import { SwapManager } from './SwapManager'
 
 export interface IChainDb {
   contains(key: string): Promise<boolean>
@@ -31,11 +30,17 @@ export class Chain {
   numTokens: number
   swapManager: SwapManager
   segmentChecker: SegmentChecker
+  predicatesManager: PredicatesManager
+  ownershipPredicateAddress: Address
 
   constructor(
-    db: IChainDb
+    db: IChainDb,
+    options: any
   ) {
-    this.segmentChecker = new SegmentChecker()
+    this.predicatesManager = new PredicatesManager()
+    this.predicatesManager.addPredicate(options.OwnershipPredicate, 'OwnershipPredicate')
+    this.ownershipPredicateAddress = this.predicatesManager.getNativePredicate('OwnershipPredicate')
+    this.segmentChecker = new SegmentChecker(this.predicatesManager)
     this.blockHeight = 0
     this.db = db
     this.txQueue = []
@@ -123,7 +128,7 @@ export class Chain {
   async handleSubmit(superRoot: string, root: string, blkNum: BigNumber, timestamp: BigNumber) {
     const block = await this.readWaitingBlock(root)
     block.txs.forEach(tx => {
-      this.segmentChecker.insert(tx, blkNum)
+      this.segmentChecker.insert(tx)
     })
     block.setBlockNumber(blkNum.toNumber())
     block.setBlockTimestamp(timestamp)
@@ -134,20 +139,22 @@ export class Chain {
   }
 
   async handleDeposit(depositor: string, tokenId: BigNumber, start: BigNumber, end: BigNumber, blkNum: BigNumber) {
-    const depositTx = new DepositTransaction(
-      depositor,
+    const depositTx = OwnershipPredicate.create(
       new Segment(
         tokenId,
         start,
         end
-      )
+      ),
+      blkNum,
+      this.ownershipPredicateAddress,
+      depositor
     )
     const block = new Block()
     block.setBlockNumber(blkNum.toNumber())
     block.setDepositTx(depositTx)
     this.blockHeight = blkNum.toNumber()
     // write to DB
-    this.segmentChecker.insertDepositTx(depositTx, blkNum)
+    this.segmentChecker.insertDepositTx(depositTx)
     await this.writeToDb(block)
     await this.writeSnapshot()
   }
@@ -157,12 +164,13 @@ export class Chain {
     segment: BigNumber,
     blkNum: BigNumber
   ) {
-    this.segmentChecker.spend(new SignedTransaction([new SplitTransaction(
-      exitor,
+    const exitTx = OwnershipPredicate.create(
       Segment.fromBigNumber(segment),
       blkNum,
+      this.ownershipPredicateAddress,
       constants.AddressZero
-    )]))
+    )    
+    this.segmentChecker.spend(new SignedTransaction([exitTx]))
     await this.writeSnapshot()
   }
 
@@ -179,7 +187,7 @@ export class Chain {
   async getUserTransactions(blkNum: BigNumber, owner: string): Promise<ChamberResult<SignedTransactionWithProof[]>> {
     const block = await this.getBlock(blkNum)
     if(block.isOk()) {
-      return new ChamberOk(block.ok().getUserTransactionAndProofs(owner))
+      return new ChamberOk(block.ok().getUserTransactionAndProofs(owner, this.predicatesManager))
     } else {
       return new ChamberResultError(block.error())
     }
@@ -240,7 +248,7 @@ export class Chain {
       const block = blockResult.ok()
       const tasks = block.txs.map(async tx => {
         await this.segmentChecker.spend(tx)
-        await this.segmentChecker.insert(tx, blkNum)
+        await this.segmentChecker.insert(tx)
       })
       await Promise.all(tasks)
       return true

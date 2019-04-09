@@ -1,10 +1,7 @@
 const CustomVerifier = artifacts.require("CustomVerifier")
 const VerifierUtil = artifacts.require("VerifierUtil")
-const OwnStateVerifier = artifacts.require("OwnStateVerifier")
-const StandardVerifier = artifacts.require("StandardVerifier")
-const SwapVerifier = artifacts.require("SwapVerifier")
-const EscrowTxVerifier = artifacts.require("EscrowTxVerifier")
-const EscrowStateVerifier = artifacts.require("EscrowStateVerifier")
+const OwnershipPredicateContract = artifacts.require("OwnershipPredicate")
+const SwapChannelPredicate = artifacts.require("SwapChannelPredicate")
 const { constants, utils } = require('ethers')
 const BigNumber = utils.BigNumber
 const {
@@ -19,8 +16,8 @@ const {
   OwnState,
   Segment,
   SignedTransaction,
-  SwapTransaction,
-  EscrowTransaction
+  OwnershipPredicate,
+  PaymentChannelPredicate
 } = require('@layer2/core')
 
 require('chai')
@@ -32,191 +29,172 @@ contract("CustomVerifier", ([alice, bob, operator, user4, user5, admin]) => {
 
   beforeEach(async () => {
     this.verifierUtil = await VerifierUtil.new({ from: operator })
-    this.ownStateVerifier = await OwnStateVerifier.new(
+    this.ownershipPredicate = await OwnershipPredicateContract.new(
       this.verifierUtil.address, { from: operator })
-    this.EscrowStateVerifier = await EscrowStateVerifier.new(
-      this.verifierUtil.address, { from: operator })
-    this.standardVerifier = await StandardVerifier.new(
+    this.swapChannelPredicate = await SwapChannelPredicate.new(
       this.verifierUtil.address,
-      this.ownStateVerifier.address,
-      { from: operator })
-    this.swapVerifier = await SwapVerifier.new(
       this.verifierUtil.address,
-      this.ownStateVerifier.address,
-      { from: operator })
-    this.escrowTxVerifier = await EscrowTxVerifier.new(
-      this.verifierUtil.address,
-      this.ownStateVerifier.address,
-      this.EscrowStateVerifier.address,
       { from: operator })
     this.customVerifier = await CustomVerifier.new(
       this.verifierUtil.address,
-      this.ownStateVerifier.address,
+      this.ownershipPredicate.address,
       {
         from: operator
       })
-    // label: 10-19
-    await this.customVerifier.addVerifier(this.standardVerifier.address, {from: operator})
-    // label: 20-29
-    await this.customVerifier.addVerifier(this.swapVerifier.address, {from: operator})
-    OwnState.setAddress(this.ownStateVerifier.address)
-
+    await this.customVerifier.registerPredicate(this.ownershipPredicate.address, {from: operator})
   });
 
-  describe("TransferTransaction", () => {
+  describe("OwnershipPredicate", () => {
 
-    it("should be exit gamable", async () => {
-      const tx = transactions.tx
-      const isExitGamable = await this.customVerifier.isExitGamable(
-        tx.getTxHash(),
-        tx.merkleHash(),
-        tx.getTxBytes(),
-        tx.getSignatures(),
-        0,
-        testAddresses.BobAddress,
-        transactions.segments[0].toBigNumber(),
-        0,
+    it("can initiate exit", async () => {
+      const segment = Segment.ETH(utils.bigNumberify('0'), utils.bigNumberify('1000000'))
+      const stateUpdate = OwnershipPredicate.create(
+        segment,
+        utils.bigNumberify(4),
+        this.ownershipPredicate.address,
+        testAddresses.AliceAddress
+      )
+      const signedTx = new SignedTransaction([stateUpdate])
+      const canInitiateExit = await this.customVerifier.canInitiateExit(
+        signedTx.getTxHash(),
+        signedTx.getTxBytes(),
+        testAddresses.AliceAddress,
+        segment.toBigNumber(),
         {
           from: alice
         });
-      const output = await this.customVerifier.getOutput(
-        tx.getTxBytes(),
-        6,
-        0,
-        {
-          from: alice
-        });
-      assert.isTrue(isExitGamable)
-      assert.equal(output, tx.getStateBytes(this.ownStateVerifier.address))
+      assert.isTrue(canInitiateExit)
     })
 
-    it("should not be exit gamable", async () => {
-      const invalidTx = transactions.invalidTx
-      await assertRevert(this.customVerifier.isExitGamable(
-        invalidTx.getTxHash(),
-        invalidTx.merkleHash(),
-        invalidTx.getTxBytes(),
-        invalidTx.getSignatures(),
-        0,
-        constants.AddressZero,
+    it("can't initiate exit", async () => {
+      const segment = Segment.ETH(utils.bigNumberify('0'), utils.bigNumberify('1000000'))
+      const stateUpdate = OwnershipPredicate.create(
+        segment,
+        utils.bigNumberify(4),
+        this.ownershipPredicate.address,
+        testAddresses.BobAddress
+      )
+      const signedTx = new SignedTransaction([stateUpdate])
+
+      await assertRevert(this.customVerifier.canInitiateExit(
+        signedTx.getTxHash(),
+        signedTx.getTxBytes(),
+        testAddresses.AliceAddress,
         transactions.segments[0].toBigNumber(),
-        0,
         {
           from: alice
         }))
     })
 
-    it("should not be exit gamable because of invalid segment", async () => {
+    it("can't initiate exit because of invalid segment", async () => {
       const tx = transactions.tx
-      await assertRevert(this.customVerifier.isExitGamable(
+      await assertRevert(this.customVerifier.canInitiateExit(
         tx.getTxHash(),
-        tx.merkleHash(),
         tx.getTxBytes(),
-        tx.getSignatures(),
-        0,
         constants.AddressZero,
         transactions.segments[1].toBigNumber(),
-        0,
         {
           from: alice
         }))
     })
 
-  })
+    describe("verifyDeprecation", () => {
+      const segment = Segment.ETH(utils.bigNumberify('0'), utils.bigNumberify('1000000'))
+      let signedTx1
+      let signedTx2
+
+      beforeEach(async () => {
+        const stateUpdate1 = OwnershipPredicate.create(
+          segment,
+          utils.bigNumberify(4),
+          this.ownershipPredicate.address,
+          testAddresses.AliceAddress
+        )
+        const stateUpdate2 = OwnershipPredicate.create(
+          segment,
+          utils.bigNumberify(4),
+          this.ownershipPredicate.address,
+          testAddresses.BobAddress
+        )
+        signedTx1 = new SignedTransaction([stateUpdate1])
+        signedTx2 = new SignedTransaction([stateUpdate2])
+      });
+
+      it("can verify deprecation", async () => {
+        signedTx2.sign(testKeys.AlicePrivateKey)
+        const verifyDeprecation = await this.customVerifier.verifyDeprecation(
+          signedTx2.getTxHash(),
+          signedTx1.getTxBytes(),
+          signedTx2.getTxBytes(),
+          signedTx2.getTransactionWitness(),
+          0,
+          {
+            from: alice
+          });
+        assert.isTrue(verifyDeprecation)
+      })
   
-  describe("MergeTransaction", () => {
+      it("can't verify deprecation", async () => {
+        signedTx2.sign(testKeys.BobPrivateKey)
+        await assertRevert(this.customVerifier.verifyDeprecation(
+          signedTx2.getTxHash(),
+          signedTx1.getTxBytes(),
+          signedTx2.getTxBytes(),
+          signedTx2.getTransactionWitness(),
+          0,
+          {
+            from: alice
+          }))
+      })      
+    })
 
-    it("should be exit gamable", async () => {
-      const tx = transactions.mergeTx
-      const isExitGamable = await this.customVerifier.isExitGamable(
-        tx.getTxHash(),
-        tx.merkleHash(),
-        tx.getTxBytes(),
-        tx.getSignatures(),
-        0,
+  })
+
+  describe("SwapChannelPredicate", () => {
+
+    it("can initiate exit", async () => {
+      const segment1 = Segment.ETH(utils.bigNumberify('0'), utils.bigNumberify('1000000'))
+      const segment2 = Segment.ETH(utils.bigNumberify('2000000'), utils.bigNumberify('3000000'))
+      const id = utils.keccak256(utils.hexlify(utils.concat([
+        utils.arrayify(segment1.toBigNumber()),
+        utils.arrayify(segment2.toBigNumber()),
+        utils.arrayify(testAddresses.AliceAddress),
+        utils.arrayify(testAddresses.BobAddress)
+      ])))
+      const stateUpdate1 = PaymentChannelPredicate.create(
+        segment1,
+        utils.bigNumberify(6),
+        this.swapChannelPredicate.address,
+        id,
+        testAddresses.AliceAddress,
         testAddresses.BobAddress,
-        transactions.segment45.toBigNumber(),
-        0,
+        1
+      )
+      const stateUpdate2 = PaymentChannelPredicate.create(
+        segment2,
+        utils.bigNumberify(6),
+        this.swapChannelPredicate.address,
+        id,
+        testAddresses.AliceAddress,
+        testAddresses.BobAddress,
+        2
+      )
+      const signedTx = new SignedTransaction([stateUpdate1, stateUpdate2])
+      const canInitiateExit = await this.customVerifier.canInitiateExit(
+        signedTx.getTxHash(),
+        stateUpdate1.encode(),
+        testAddresses.AliceAddress,
+        segment1.toBigNumber(),
         {
           from: alice
         });
-      const output = await this.customVerifier.getOutput(
-        tx.getTxBytes(),
-        6,
-        0,
-        {
-          from: alice
-        });
-      assert.isTrue(isExitGamable)
-      assert.equal(output, tx.getStateBytes(this.ownStateVerifier.address))
+      assert.isTrue(canInitiateExit)
     })
 
   })
 
-  describe("SwapTransaction", () => {
-    const blkNum3 = utils.bigNumberify('3')
-    const blkNum5 = utils.bigNumberify('5')
-
-    const swapTx = new SignedTransaction([new SwapTransaction(
-      testAddresses.AliceAddress,
-      Segment.ETH(
-        utils.bigNumberify('5000000'),
-        utils.bigNumberify('5100000')),
-      blkNum3,
-      testAddresses.OperatorAddress,
-      Segment.ETH(
-        utils.bigNumberify('5100000'),
-        utils.bigNumberify('5200000')),
-      blkNum5,
-      utils.bigNumberify('40000'),
-      utils.bigNumberify('60000'))])
-      swapTx.sign(testKeys.AlicePrivateKey)
-      swapTx.sign(testKeys.OperatorPrivateKey)
-
-    it("should isSpent", async () => {
-      const exitState1 = new OwnState(
-        Segment.ETH(
-          utils.bigNumberify('5000000'),
-          utils.bigNumberify('5100000')),
-        alice).withBlkNum(blkNum3)
-      const exitState2 = new OwnState(
-        Segment.ETH(
-          utils.bigNumberify('5100000'),
-          utils.bigNumberify('5200000')),
-        operator).withBlkNum(blkNum5)
-      const evidence2 = await this.customVerifier.getSpentEvidence(
-        swapTx.getTxBytes(),
-        0,
-        swapTx.getSignatures()
-      )
-      const evidence3 = await this.customVerifier.getSpentEvidence(
-        swapTx.getTxBytes(),
-        1,
-        swapTx.getSignatures()
-      )
-      const result2 = await this.customVerifier.isSpent(
-        swapTx.getTxHash(),
-        exitState1.getBytes(),
-        evidence2,
-        0,
-        {
-          from: alice
-        });
-      const result3 = await this.customVerifier.isSpent(
-        swapTx.getTxHash(),
-        exitState2.getBytes(),
-        evidence3,
-        0,
-        {
-          from: alice
-        });
-      assert.equal(result2, true)
-      assert.equal(result3, true)
-    })
-
-  })
-
-  describe("addVerifier", () => {
+ /*
+  describe("register", () => {
 
     const blkNum = utils.bigNumberify('3')
     const segment = Segment.ETH(
@@ -257,6 +235,7 @@ contract("CustomVerifier", ([alice, bob, operator, user4, user5, admin]) => {
     })
 
   })
+  */
 
   describe("parseSegment", () => {
 

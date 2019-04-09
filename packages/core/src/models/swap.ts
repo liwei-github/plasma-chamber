@@ -1,9 +1,9 @@
 import { Segment } from '../segment';
-import { SwapTransaction, TransactionOutput } from '../tx';
 import { Address } from '../helpers/types';
 import * as ethers from 'ethers'
 import BigNumber = ethers.utils.BigNumber
 import { SignedTransaction } from '../SignedTransaction';
+import { StateUpdate, OwnershipPredicate } from '../StateUpdate';
 
 export class SwapRequest {
   owner: Address
@@ -11,7 +11,7 @@ export class SwapRequest {
   segment: Segment
   neightborBlkNum: BigNumber
   neighbor: Segment
-  target?: TransactionOutput
+  target?: StateUpdate
 
   constructor(
     owner: Address,
@@ -74,15 +74,15 @@ export class SwapRequest {
     return this.neighbor.end.eq(segment.start) || this.neighbor.start.eq(segment.end)
   }
 
-  setTarget(target: TransactionOutput) {
+  setTarget(target: StateUpdate) {
     this.target = target
   }
 
-  getSignedSwapTx() {
+  getSignedSwapTx(targetBlock: BigNumber, predicate: Address) {
     if(this.target) {
-      const tx = this.getSwapTx(this.target.getOwners()[0], this.target.getBlkNum(), this.target.getSegment(0))
-      if(tx)
-        return new SignedTransaction([tx])
+      const txs = this.getSwapTx(this.target.state, targetBlock, this.target.getSegment(), predicate)
+      if(txs)
+        return new SignedTransaction(txs)
     } else {
       throw new Error('target not setted')
     }
@@ -103,28 +103,39 @@ export class SwapRequest {
   private getSwapTx(
     owner: Address,
     blkNum: BigNumber,
-    segment: Segment
+    segment: Segment,
+    predicate: Address
   ) {
     if(segment.getAmount().gte(this.segment.getAmount())) {
       // case: segment >= this.segment
       // swap segment:left and this.segment
-      return new SwapTransaction(
-        owner,
-        new Segment(segment.getTokenId(), segment.start, segment.start.add(this.segment.getAmount())),
-        blkNum,
-        this.getOwner(),
-        this.segment,
-        this.getBlkNum())
+      return [
+        OwnershipPredicate.create(
+          new Segment(segment.getTokenId(), segment.start, segment.start.add(this.segment.getAmount())),
+          blkNum,
+          predicate,
+          this.getOwner(),
+        ), OwnershipPredicate.create(
+          this.segment,
+          blkNum,
+          predicate,
+          owner
+        )]
     } else {
       // case: segment < this.segment
       // swap segment and this.segment:left
-      return new SwapTransaction(
-        owner,
-        segment,
-        blkNum,
-        this.getOwner(),
-        new Segment(this.segment.getTokenId(), this.segment.end.sub(segment.getAmount()), this.segment.end),
-        this.getBlkNum())
+      return [
+        OwnershipPredicate.create(
+          segment,
+          blkNum,
+          predicate,
+          this.getOwner(),
+        ), OwnershipPredicate.create(
+          new Segment(this.segment.getTokenId(), this.segment.end.sub(segment.getAmount()), this.segment.end),
+          blkNum,
+          predicate,
+          owner
+        )]
     }
   }
 
