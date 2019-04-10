@@ -40,8 +40,8 @@ describe('TxFilter', () => {
     const signedTx2 = new SignedTransaction([tx2])
     signedTx1.sign(AlicePrivateKey)
     signedTx2.sign(AlicePrivateKey)
-    assert.isTrue(txFilter.checkAndInsertTx(signedTx1))
-    assert.isTrue(txFilter.checkAndInsertTx(signedTx2))
+    assert.isTrue(txFilter.checkAndInsertTx(signedTx1).isOk())
+    assert.isTrue(txFilter.checkAndInsertTx(signedTx2).isOk())
   })
 
   it('should fail to checkAndInsertTx', async () => {
@@ -50,10 +50,8 @@ describe('TxFilter', () => {
     const signedTx3 = new SignedTransaction([tx3])
     signedTx1.sign(AlicePrivateKey)
     signedTx3.sign(AlicePrivateKey)
-    assert.isTrue(txFilter.checkAndInsertTx(signedTx1))
-    assert.throws(() => {
-      txFilter.checkAndInsertTx(signedTx3)
-    }, 'conflicted segments');
+    assert.isTrue(txFilter.checkAndInsertTx(signedTx1).isOk())
+    assert.isTrue(txFilter.checkAndInsertTx(signedTx3).isError())
   })
 
 })
