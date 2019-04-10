@@ -1,6 +1,7 @@
 import { SignedTransaction } from './SignedTransaction'
 import { BigNumber } from 'ethers/utils';
 import { StateUpdate, PredicatesManager } from './StateUpdate';
+import { Segment } from './segment'
 
 export class SegmentChecker {
 
@@ -83,6 +84,10 @@ export class SegmentChecker {
     return this._insert(deposit)
   }
 
+  startExit(segment: Segment) {
+    this.leaves = this.leaves.filter(l => !l.getSegment().toBigNumber().eq(segment.toBigNumber()))
+  }
+  
   serialize() {
     return this.leaves.map(l => l.serialize())
   }

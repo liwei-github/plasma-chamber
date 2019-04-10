@@ -65,6 +65,12 @@ describe('SegmentChecker', () => {
     assert.isFalse(segmentChecker.isContain(invalidTx))
   })
 
+  it('should succeed to startExit', async () => {
+    const segmentChecker = new SegmentChecker(predicateManager)
+    segmentChecker.startExit(Segment.ETH(ethers.utils.bigNumberify(0), ethers.utils.bigNumberify(10000000)))
+    assert.equal(segmentChecker.leaves.length, 0)
+  })
+
   it('should succeed to insert', async () => {
     const segmentChecker = new SegmentChecker(predicateManager)
     const insertResults = segmentChecker.insert(signedTx1,)
