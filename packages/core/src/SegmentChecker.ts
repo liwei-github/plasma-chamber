@@ -1,6 +1,5 @@
 import { SignedTransaction } from './SignedTransaction'
-import { BigNumber } from 'ethers/utils';
-import { StateUpdate, PredicatesManager } from './StateUpdate';
+import { StateUpdate, PredicatesManager } from './StateUpdate'
 import { Segment } from './segment'
 
 export class SegmentChecker {
@@ -13,14 +12,19 @@ export class SegmentChecker {
     this.leaves = []
   }
 
+  private getLeavesInRange(range: Segment) {
+    return this.leaves.filter(l => range.isHit(l.getSegment()))
+  }
+
   private _isContain(
     hash: string,
     stateUpdate: StateUpdate,
     deprecationWitness: string
   ) {
-    return this.leaves.filter(l => {
-      return l.verifyDeprecation(hash, stateUpdate, deprecationWitness, this.predicatesManager)
-    }).length > 0
+    const targets = this.getLeavesInRange(stateUpdate.getSegment())
+    return targets.filter(l => {
+      return l.verifyDeprecation(hash, stateUpdate.getSubStateUpdate(l.getSegment()), deprecationWitness, this.predicatesManager)
+    }).length == targets.length
   }
 
   private _spend(
@@ -28,11 +32,18 @@ export class SegmentChecker {
     stateUpdate: StateUpdate,
     deprecationWitness: string
   ) {
-    const target = this.leaves.filter(l => l.verifyDeprecation(hash, stateUpdate, deprecationWitness, this.predicatesManager))[0]
-    this.leaves = this.leaves.filter(l => !(l.verifyDeprecation(hash, stateUpdate, deprecationWitness, this.predicatesManager)))
-    if(target) {
-      target.getRemainingState(stateUpdate).forEach(newTxo => {
-        this.leaves.push(newTxo)
+    const targets = this.getLeavesInRange(stateUpdate.getSegment())
+    const canDeprecate = targets.filter(l => {
+      return l.verifyDeprecation(hash, stateUpdate.getSubStateUpdate(l.getSegment()), deprecationWitness, this.predicatesManager)
+    }).length == targets.length
+    if(canDeprecate) {
+      this.leaves = this.leaves.filter(l => {
+        return targets.map(t => t.hash()).indexOf(l.hash()) < 0
+      })
+      targets.forEach(target => {
+        target.getRemainingState(stateUpdate).forEach(newTxo => {
+          this.leaves.push(newTxo)
+        })
       })
       return true
     } else {

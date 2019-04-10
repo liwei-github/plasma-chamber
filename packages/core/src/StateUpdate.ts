@@ -77,6 +77,18 @@ export class StateUpdate {
     return utils.keccak256(this.encode())
   }
 
+  getSubStateUpdate(newSegment: Segment) {
+    if(this.segment.isContain(newSegment)) {
+      return new StateUpdate(
+        newSegment,
+        this.blkNum,
+        this.predicate,
+        this.state)
+    } else {
+      return this
+    }
+  }
+
   getRemainingState(
     state: StateUpdate
   ): StateUpdate[] {
