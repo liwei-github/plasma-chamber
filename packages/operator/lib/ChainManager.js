@@ -1,3 +1,4 @@
+const Logger = require('js-logger')
 const { Chain } = require("@layer2/childchain");
 const ChainDb = require('./db/LeveldbAdaptor');
 const { EventWatcher, ETHEventAdaptor } = require('@layer2/events-watcher')
@@ -83,7 +84,7 @@ class ChainManager {
     try {
       await this.chain.readSnapshot()
     } catch(e) {
-      console.log('snapshot root not found', e)
+      Logger.error('snapshot root not found', e)
     }
 
     const rootChainEventListener = new EventWatcher(
@@ -106,17 +107,19 @@ class ChainManager {
               {
                 gasLimit: 200000
               });
-            console.log(
-              'submit',
+            Logger.debug(
+              'SubmitBlock',
+              new Date().toISOString(),
               generateBlockResult.ok(),
-              result.hash);
+              result.hash)
+            Logger.debug('Current State', this.chain.getCurrentSegments())
           }else{
-            console.error(generateBlockResult.error())
+            Logger.error(generateBlockResult.error())
           }
           this.chain.clear()
         }
       } catch(e) {
-        console.error(e)
+        Logger.error(e)
         this.chain.clear()
       }
       this.timer = setTimeout(generateBlock, blockTime);
@@ -126,7 +129,7 @@ class ChainManager {
     }
 
     rootChainEventListener.addEvent('BlockSubmitted', async (e) => {
-      console.log(
+      Logger.info(
         'eventListener.BlockSubmitted',
         e.values._blkNum.toNumber(),
         e.values._superRoot);
@@ -135,9 +138,10 @@ class ChainManager {
         e.values._root,
         e.values._blkNum,
         e.values._timestamp);
+      this.chain.getCurrentSegments()
     })
     rootChainEventListener.addEvent('ListingEvent', async (e) => {
-      console.log(
+      Logger.debug(
         'eventListener.ListingEvent',
         e.values._tokenId.toNumber(),
         e.values._tokenAddress);
@@ -148,7 +152,7 @@ class ChainManager {
       }
     })
     rootChainEventListener.addEvent('Deposited', async (e) => {
-      console.log(
+      Logger.info(
         'eventListener.Deposited',
         e.values._blkNum.toNumber(),
         e.values._depositer);
@@ -160,11 +164,11 @@ class ChainManager {
           e.values._end,
           e.values._blkNum);
         }catch(e) {
-        console.error(e)
+          Logger.error(e)
       }
     })
     rootChainEventListener.addEvent('ExitStarted', async (e) => {
-      console.log('eventListener.ExitStarted');
+      Logger.debug('eventListener.ExitStarted');
       await this.chain.handleExit(
         e.values._Exitor,
         e.values._segment,
@@ -172,11 +176,11 @@ class ChainManager {
 
     })
     await rootChainEventListener.initPolling(()=>{
-      console.log('polling completed')
+      Logger.info('polling completed')
     }, (e) => {
-      console.log("############################################################")
-      console.log("#! ROOTCHAIN_ENDPOINT or ROOTCHAIN_ADDRESS isn't correct? !#")
-      console.log("############################################################")
+      console.info("############################################################")
+      console.info("#! ROOTCHAIN_ENDPOINT or ROOTCHAIN_ADDRESS isn't correct? !#")
+      console.info("############################################################")
     })
     return this.chain;
   }

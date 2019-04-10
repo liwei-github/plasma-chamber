@@ -135,6 +135,24 @@ export class Segment {
     && this.end.gte(segment.end)
   }
 
+  add(segment: Segment): Segment {
+    if(this.end.eq(segment.start)) {
+      return new Segment(
+        this.tokenId,
+        this.start,
+        segment.end
+      )
+    } else if(this.start.eq(segment.end)) {
+      return new Segment(
+        this.tokenId,
+        segment.start,
+        this.end
+      )
+    } else {
+      throw new Error('segments are not neighbor')
+    }
+  }
+
   sub(segment: Segment) {
     const s1 = new Segment(
       this.tokenId,
@@ -147,6 +165,14 @@ export class Segment {
       this.end
     )
     return [s1, s2].filter(s => !s.getAmount().eq(0))
+  }
+
+  pretty() {
+    return {
+      tokenId: this.tokenId.toNumber(),
+      start: this.start.toNumber(),
+      end: this.end.toNumber()
+    }
   }
 
 }
