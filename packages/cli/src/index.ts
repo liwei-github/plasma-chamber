@@ -29,7 +29,8 @@ const options = {
   // initialBlock: 10000000,
   initialBlock: process.env.INITIAL_BLOCK || 1,
   interval: 20000,
-  confirmation: process.env.CONFIRMATION || 0
+  confirmation: process.env.CONFIRMATION || 0,
+  OwnershipPredicate: '0x9FBDa871d559710256a2502A2517b794B482Db40'
 }
 const basePath = path.join(__dirname, './.clidb')
 const persnalPath = path.join(basePath, address)
@@ -43,7 +44,7 @@ const storage = new FileStorage(persnalPath)
 const wallet = ChamberWallet.createWalletWithPrivateKey(
   client,
   process.env.ROOTCHAIN_ENDPOINT || 'http://127.0.0.1:8545',
-  process.env.ROOTCHAIN_ADDRESS || '0xeec918d74c746167564401103096D45BbD494B74',
+  process.env.ROOTCHAIN_ADDRESS || '0xb9A219631Aed55eBC3D998f17C3840B7eC39C0cc',
   storage,
   privateKey,
   options
@@ -64,7 +65,7 @@ program
   .command('deposit')
   .option('-v, --value <value>', 'amount to deposit')
   .action(async function(options) {
-    await deposit(options.to)
+    await deposit(options.value)
     console.log('finished')
   })
 

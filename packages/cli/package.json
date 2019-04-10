@@ -9,7 +9,11 @@
     "dist"
   ],
   "main": "index.js",
+  "bin": {
+    "layer2-cli": "dist/index.js"
+  },
   "scripts": {
+    "start": "node dist/index.js",
     "build": "tsc --build ./tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 0"
   },
