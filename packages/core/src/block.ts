@@ -218,13 +218,14 @@ class SegmentNode {
         } else {
           const signedTx = this.getSignedTransaction(proof.leaf)
           const index = signedTx.getIndex(proof.segment)
+          const proofsForInclusion = this.getProof(signedTx.hash());
           return new SignedTransactionWithProof(
             signedTx,
             index.txIndex,
             superRoot,
             this.getRoot(),
             this.timestamp,
-            proofs,
+            proofsForInclusion,
             utils.bigNumberify(this.number))
         }
       })
