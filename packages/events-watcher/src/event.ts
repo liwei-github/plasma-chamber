@@ -59,6 +59,7 @@ export class EventWatcher {
   storage: IEventWatcherStorage
   checkingEvents: Map<string, RootChainEventHandler>
   options: EventWatcherOptions
+  timer?: NodeJS.Timeout
   
   constructor(
     adaptor: IETHEventAdaptor,
@@ -90,9 +91,15 @@ export class EventWatcher {
         errorHandler(e)
       }
     }
-    setTimeout(async ()=>{
+    this.timer = setTimeout(async ()=>{
       await this.initPolling(handler, errorHandler);
     }, this.options.interval);
+  }
+
+  cancel() {
+    if(this.timer) {
+      clearTimeout(this.timer)
+    }
   }
 
   async polling(fromBlockNumber: number, blockNumber: number, completedHandler: CompletedHandler) {

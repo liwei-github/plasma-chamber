@@ -58,7 +58,6 @@ program
   .command('balance')
   .action(async function(options) {
     await balance()
-    console.log('finished')
   })
 
 program
@@ -82,7 +81,6 @@ program
   .command('merge')
   .action(async function(options) {
     await merge()
-    console.log('finished')
   })
 
 program.parse(process.argv)
@@ -93,6 +91,10 @@ async function deposit(amount: string) {
   console.log('wallet initialized')
   const result = await wallet.deposit(amount)
   console.log(result)
+  await waitUpdate()
+  const balanceResult = await wallet.getBalance()
+  console.log('balance=', balanceResult.toNumber())
+  finalize()
 }
 
 async function transfer(to: string, amount: string) {
@@ -104,24 +106,37 @@ async function transfer(to: string, amount: string) {
   const result = await wallet.transfer(to, 0, amount)
   console.log(result)
   console.log(`transfered ${amount} GWEI to ${to}.`)
-  wallet.on('send', async (e) => {
-    const result = await wallet.getBalance()
-    console.log('sent')
-    console.log(result.toNumber())
-  })
+  await waitUpdate()
+  const balanceResult = await wallet.getBalance()
+  console.log('balance=', balanceResult.toNumber())
+  finalize()
 }
 
 async function balance() {
-  wallet.on('updated', async (e) => {
-    const result = await e.wallet.getBalance()
-    console.log(result.toNumber())
-  })
   await wallet.init()
   console.log('wallet initialized')
   await wallet.syncChildChain()
   console.log('wallet synced')
+  await waitUpdate()
   const result = await wallet.getBalance()
   console.log('balance=', result.toNumber())
+  finalize()
+}
+
+async function waitUpdate() {
+  return new Promise((resolve) => {
+    wallet.on('updated', async (e) => {
+      resolve(e.wallet)
+    })
+  })
+}
+
+async function waitSent() {
+  return new Promise((resolve) => {
+    wallet.on('send', async (e) => {
+      resolve(e.wallet)
+    })
+  })
 }
 
 async function merge() {
@@ -129,4 +144,11 @@ async function merge() {
   console.log('wallet initialized')
   const result = await wallet.merge()
   console.log(result)
+  finalize()
+}
+
+function finalize() {
+  console.log('finalize')
+  wallet.cancelPolling()
+  process.exit(0)
 }

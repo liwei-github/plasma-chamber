@@ -1,4 +1,5 @@
 import * as ethers from 'ethers'
+import * as Logger from 'js-logger'
 import { PlasmaClient } from './PlasmaClient'
 import {
   WalletStorage
@@ -75,7 +76,7 @@ export class PlasmaSyncher extends EventEmitter {
       options
     )
     this.listener.addEvent('BlockSubmitted', (e) => {
-      console.log('BlockSubmitted', e)
+      Logger.debug('BlockSubmitted', e)
       this.addWaitingBlock(new WaitingBlockWrapper(
         e.values._blkNum,
         e.values._root
@@ -100,6 +101,10 @@ export class PlasmaSyncher extends EventEmitter {
     await this.listener.initPolling(() => {
       handler()
     })
+  }
+
+  cancel() {
+    this.listener.cancel()
   }
 
   /**
