@@ -86,6 +86,15 @@ describe('Block', () => {
     const exclusionProof = segmentedBlock.getItems()[0] as ExclusionProof
     assert.equal(exclusionProof.proof.segment.start.toNumber(), 0)
     assert.equal(exclusionProof.proof.segment.end.toNumber(), 5000000)
+
+    const segment2 = new Segment(
+      utils.bigNumberify('0'),
+      utils.bigNumberify('5000000'),
+      utils.bigNumberify('6000000')
+    )
+    const segmentedBlock2 = block.getSegmentedBlock(segment2)
+    const signedTx = segmentedBlock2.getItems()[0] as SignedTransactionWithProof
+    assert.isTrue(signedTx.checkInclusion())
   })
 
   it('serialize and deserialize', () => {

@@ -45,6 +45,12 @@ describe('SegmentChecker', () => {
     predicate,
     AliceAddress
   )
+  const merge = OwnershipPredicate.create(
+    Segment.ETH(ethers.utils.bigNumberify(0), ethers.utils.bigNumberify(15000000)),
+    ethers.utils.bigNumberify(8),
+    predicate,
+    AliceAddress
+  )
 
   const signedTx1 = new SignedTransaction([tx1])
   signedTx1.sign(AlicePrivateKey)
@@ -57,6 +63,8 @@ describe('SegmentChecker', () => {
   const signedTx5 = new SignedTransaction([tx5])
   signedTx5.sign(BobPrivateKey)
   const invalidTx = new SignedTransaction([tx1])
+  const sinedMergeTx = new SignedTransaction([merge])
+  sinedMergeTx.sign(AlicePrivateKey)
 
   it('should fail to check contain', async () => {
     const segmentChecker = new SegmentChecker(predicateManager)
@@ -65,15 +73,27 @@ describe('SegmentChecker', () => {
     assert.isFalse(segmentChecker.isContain(invalidTx))
   })
 
+  it('should succeed check contain', async () => {
+    const segmentChecker = new SegmentChecker(predicateManager)
+    segmentChecker.insertDepositTx(tx1)
+    assert.isTrue(segmentChecker.isContain(signedTx2))
+  })
+
+  it('should fail to check contain from empty', async () => {
+    const segmentChecker = new SegmentChecker(predicateManager)
+    assert.isFalse(segmentChecker.isContain(signedTx2))
+  })
+
   it('should succeed to startExit', async () => {
     const segmentChecker = new SegmentChecker(predicateManager)
+    segmentChecker.insert(signedTx1)
     segmentChecker.startExit(Segment.ETH(ethers.utils.bigNumberify(0), ethers.utils.bigNumberify(10000000)))
     assert.equal(segmentChecker.leaves.length, 0)
   })
 
   it('should succeed to insert', async () => {
     const segmentChecker = new SegmentChecker(predicateManager)
-    const insertResults = segmentChecker.insert(signedTx1,)
+    const insertResults = segmentChecker.insert(signedTx1)
     assert.deepEqual(insertResults, [true])
     assert.isTrue(segmentChecker.isContain(signedTx2))
     assert.isTrue(segmentChecker.isContain(signedTx3))
@@ -92,7 +112,7 @@ describe('SegmentChecker', () => {
     segmentChecker.insert(signedTx1)
     segmentChecker.spend(signedTx2)
     assert.equal(segmentChecker.leaves.length, 1)
-    assert.isFalse(segmentChecker.isContain(signedTx2))
+    assert.isFalse(segmentChecker.isContain(signedTx1))
     assert.isTrue(segmentChecker.isContain(signedTx3))
   })
 
@@ -100,10 +120,10 @@ describe('SegmentChecker', () => {
     const segmentChecker = new SegmentChecker(predicateManager)
     segmentChecker.insert(signedTx1)
     segmentChecker.spend(signedTx2)
-    const spendResults = segmentChecker.spend(signedTx2)
+    const spendResults = segmentChecker.spend(signedTx1)
     assert.equal(segmentChecker.leaves.length, 1)
     assert.deepEqual(spendResults, [false])
-    assert.isFalse(segmentChecker.isContain(signedTx2))
+    assert.isFalse(segmentChecker.isContain(signedTx1))
     assert.isTrue(segmentChecker.isContain(signedTx3))
   })
 
@@ -115,6 +135,18 @@ describe('SegmentChecker', () => {
     segmentChecker.insert(signedTx4)
     assert.equal(segmentChecker.leaves[0].getSegment().start.toString(), '0')
     assert.equal(segmentChecker.leaves[3].getSegment().start.toString(), '12000000')
+  })
+
+  it('succeed to insert merge state', async () => {
+    const segmentChecker = new SegmentChecker(predicateManager)
+    segmentChecker.insert(signedTx2)
+    segmentChecker.insert(signedTx4)
+    segmentChecker.insert(signedTx5)
+    segmentChecker.insert(signedTx3)
+    segmentChecker.spend(sinedMergeTx)
+    segmentChecker.insert(sinedMergeTx)
+    assert.equal(segmentChecker.leaves[0].getSegment().start.toString(), '0')
+    assert.equal(segmentChecker.leaves[0].getSegment().end.toString(), '15000000')
   })
 
 })

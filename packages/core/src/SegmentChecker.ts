@@ -24,7 +24,7 @@ export class SegmentChecker {
     const targets = this.getLeavesInRange(stateUpdate.getSegment())
     return targets.filter(l => {
       return l.verifyDeprecation(hash, stateUpdate.getSubStateUpdate(l.getSegment()), deprecationWitness, this.predicatesManager)
-    }).length == targets.length
+    }).length == targets.length && targets.length > 0
   }
 
   private _spend(

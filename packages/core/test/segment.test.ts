@@ -19,7 +19,7 @@ describe('Segment', () => {
     assert.equal(segment.start.toString(), '1000000');
   });
 
-  it('add', () => {
+  it('segment1 is added to segment2', () => {
     const segment1 = new Segment(
       utils.bigNumberify('0'),
       utils.bigNumberify('1000000'),
@@ -34,7 +34,7 @@ describe('Segment', () => {
     assert.equal(segment_pattern2.getAmount().toNumber(), 1500000);
   });
 
-  it('sub', () => {
+  it('small segment2 is subsctacted from segment1', () => {
     const segment1 = new Segment(
       utils.bigNumberify('0'),
       utils.bigNumberify('1000000'),
@@ -46,6 +46,19 @@ describe('Segment', () => {
     const segment = segment1.sub(segment2)[0]
     assert.equal(segment.getAmount().toNumber(), 800000);
   });
+
+  it('large segment2 is subsctacted from segment1', () => {
+    const segment1 = new Segment(
+      utils.bigNumberify('0'),
+      utils.bigNumberify('1000000'),
+      utils.bigNumberify('2000000'))
+    const segment2 = new Segment(
+      utils.bigNumberify('0'),
+      utils.bigNumberify('0'),
+      utils.bigNumberify('3000000'))
+    assert.equal(segment1.sub(segment2).length, 0)
+  });
+
 
 
 })
