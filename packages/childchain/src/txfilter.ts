@@ -1,6 +1,11 @@
 import {
-  SignedTransaction, Segment
+  ChamberResult,
+  ChamberResultError,
+  SignedTransaction,
+  Segment,
+  ChamberOk
 } from '@layer2/core';
+import { ChainErrorFactory } from './error'
 
 export class TxFilter {
   txHashes: Map<string, boolean>
@@ -11,14 +16,14 @@ export class TxFilter {
     this.segments = []
   }
 
-  checkAndInsertTx(tx: SignedTransaction): boolean {
+  checkAndInsertTx(tx: SignedTransaction): ChamberResult<boolean> {
     /*
     if(!tx.verify()) {
       throw new Error('invalid transaction')
     }
     */
     if(this.txHashes.get(tx.hash()) !== undefined) {
-      throw new Error('conflicted transaction hash')
+      return new ChamberResultError(ChainErrorFactory.AlreadySent())
     }
     if(tx.getStateUpdates().filter(input => {
       const target = input.getSegment()
@@ -26,11 +31,11 @@ export class TxFilter {
         return target.start.lt(segment.end) && target.end.gt(segment.start)
       }).length > 0
     }).length > 0) {
-      throw new Error('conflicted segments')
+      return new ChamberResultError(ChainErrorFactory.SegmentDuplicated())
     }
     this.txHashes.set(tx.hash(), true)
     this.segments = this.segments.concat(tx.getSegments())
-    return true
+    return new ChamberOk(true)
   }
 
   clear() {

@@ -8,8 +8,14 @@ export class ChainErrorFactory {
   static InvalidTransaction() {
     return new ChamberError(1010, 'invalid transaction')
   }
-  static ConflictSegment() {
-    return new ChamberError(1020, 'segment conflicted')
+  static AlreadySent() {
+    return new ChamberError(1011, 'already sent')
+  }
+  static SegmentDuplicated() {
+    return new ChamberError(1011, 'segment duplicated')
+  }
+  static UnknownError() {
+    return new ChamberError(1020, 'unknown Error')
   }
   static NoValidTransactions() {
     return new ChamberError(1030, 'no valid transactions')

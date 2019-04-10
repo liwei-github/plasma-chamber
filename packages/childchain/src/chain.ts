@@ -63,15 +63,18 @@ export class Chain {
 
   appendTx(tx: SignedTransaction): ChamberResult<boolean> {
     try {
-      if(this.txFilter.checkAndInsertTx(tx)
-      && this.segmentChecker.isContain(tx)) {
-        this.txQueue.push(tx)
-        return new ChamberOk(true)
-      }else{
-        return new ChamberOk(false)
+      const result = this.txFilter.checkAndInsertTx(tx)
+      if(result.isError()) {
+        return result
       }
+      if(!this.segmentChecker.isContain(tx)) {
+        return new ChamberResultError(ChainErrorFactory.InvalidTransaction())
+      }
+      this.txQueue.push(tx)
+      return new ChamberOk(true)
     } catch (e) {
-      return new ChamberResultError(ChainErrorFactory.InvalidTransaction())
+      console.warn(e)
+      return new ChamberResultError(ChainErrorFactory.UnknownError())
     }
   }
 
