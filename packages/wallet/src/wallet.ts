@@ -1,4 +1,5 @@
 import * as ethers from 'ethers'
+import * as Logger from 'js-logger'
 import EventEmitter from 'events'
 import {
   PlasmaClient, FastTransferResponse
@@ -174,14 +175,14 @@ export class ChamberWallet extends EventEmitter {
     this.listener = this.plasmaSyncher.getListener()
     
     this.listener.addEvent('ListingEvent', (e) => {
-      console.log('ListingEvent', e)
+      Logger.debug('ListingEvent', e)
       this.handleListingEvent(
         e.values._tokenId,
         e.values._tokenAddress
       )
     })
     this.listener.addEvent('ExitStarted', (e) => {
-      console.log('ExitStarted', e)
+      Logger.debug('ExitStarted', e)
       this.handleExit(
         e.values._exitId,
         e.values._exitStateHash,
@@ -190,7 +191,7 @@ export class ChamberWallet extends EventEmitter {
       )
     })
     this.listener.addEvent('FinalizedExit', (e) => {
-      console.log('FinalizedExit', e)
+      Logger.debug('FinalizedExit', e)
       this.handleFinalizedExit(
         e.values._tokenId,
         e.values._start,
@@ -198,7 +199,7 @@ export class ChamberWallet extends EventEmitter {
       )
     })
     this.listener.addEvent('Deposited', (e) => {
-      console.log('Deposited', e)
+      Logger.debug('Deposited', e)
       this.handleDeposit(
         e.values._depositer,
         e.values._tokenId,
@@ -213,6 +214,12 @@ export class ChamberWallet extends EventEmitter {
     this.plasmaSyncher.on('PlasmaBlockHeaderAdded', (e: any) => {
       this.segmentHistoryManager.appendBlockHeader(e.blockHeader as WaitingBlockWrapper)
     })
+    Logger.useDefaults()
+    if(this.options.logLevel === 'debug') {
+      Logger.setLevel(Logger.DEBUG)
+    } else {
+      Logger.setLevel(Logger.WARN)
+    }
   }
 
   setPredicate(name: string, predicate: Address) {
@@ -239,13 +246,17 @@ export class ChamberWallet extends EventEmitter {
     await this.plasmaSyncher.init(() => {
       this.emit('updated', {wallet: this})
     })
+  }
 
+  async cancelPolling() {
+    this.plasmaSyncher.cancel()
+    this.client.unsubscribeFastTransfer(this.getAddress())
   }
 
   async loadBlockNumber() {
     return await this.client.getBlockNumber()
   }
-
+  
   getPlasmaBlockNumber() {
     return this.loadedBlockNumber
   }

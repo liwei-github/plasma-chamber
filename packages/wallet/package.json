@@ -37,6 +37,7 @@
     "ethers": "^4.0.27",
     "istanbul": "^0.4.5",
     "istanbul-coveralls": "^1.0.3",
+    "js-logger": "^1.6.0",
     "mqtt": "^2.18.8",
     "node-fetch": "^2.3.0",
     "remap-istanbul": "^0.13.0",

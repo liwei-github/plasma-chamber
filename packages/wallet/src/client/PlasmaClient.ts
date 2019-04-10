@@ -27,6 +27,7 @@ export class FastTransferResponse {
 export class PlasmaClient {
   jsonRpcClient: INetworkClient
   mqttClient: IPubsubClient
+  ffHandler?: (e: any) => void
 
   constructor(
     client: INetworkClient,
@@ -69,9 +70,16 @@ export class PlasmaClient {
   }
 
   subscribeFastTransfer(myAddress: string, handler: (tx: SignedTransaction) => Promise<void>) {
-    this.mqttClient.subscribe('transfer/' + myAddress, (e) => {
+    this.ffHandler = (e) => {
       handler(SignedTransaction.deserialize(JSON.parse(e)))
-    })
+    }
+    this.mqttClient.subscribe('transfer/' + myAddress, this.ffHandler)
+  }
+
+  unsubscribeFastTransfer(myAddress: string) {
+    if(this.ffHandler) {
+      this.mqttClient.unsubscribe('transfer/' + myAddress, this.ffHandler)
+    }
   }
 
   async fastTransfer(tx: SignedTransaction): Promise<ChamberResult<FastTransferResponse>> {

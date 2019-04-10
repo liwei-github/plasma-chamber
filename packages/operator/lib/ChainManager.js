@@ -112,7 +112,6 @@ class ChainManager {
               new Date().toISOString(),
               generateBlockResult.ok(),
               result.hash)
-            Logger.debug('Current State', this.chain.getCurrentSegments())
           }else{
             Logger.error(generateBlockResult.error())
           }
@@ -138,7 +137,7 @@ class ChainManager {
         e.values._root,
         e.values._blkNum,
         e.values._timestamp);
-      this.chain.getCurrentSegments()
+      Logger.debug('Current State', this.chain.getCurrentSegments())
     })
     rootChainEventListener.addEvent('ListingEvent', async (e) => {
       Logger.debug(
