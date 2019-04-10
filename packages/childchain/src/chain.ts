@@ -164,13 +164,7 @@ export class Chain {
     segment: BigNumber,
     blkNum: BigNumber
   ) {
-    const exitTx = OwnershipPredicate.create(
-      Segment.fromBigNumber(segment),
-      blkNum,
-      this.ownershipPredicateAddress,
-      constants.AddressZero
-    )    
-    this.segmentChecker.spend(new SignedTransaction([exitTx]))
+    this.segmentChecker.startExit(Segment.fromBigNumber(segment))
     await this.writeSnapshot()
   }
 

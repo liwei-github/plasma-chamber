@@ -368,17 +368,18 @@ export class ChamberWallet extends EventEmitter {
     exitId: BigNumber,
     exitStateHash: string,
     exitableAt: BigNumber,
-    segment: BigNumber
+    segmentUint: BigNumber
   ) {
+    const segment = Segment.fromBigNumber(segmentUint)
     const utxo = this.getUTXOArray().filter(utxo => {
-      return utxo.getOutput().hash() == exitStateHash
+      return utxo.getOutput().getSegment().toBigNumber().eq(segment.toBigNumber())
     })[0]
     if(utxo) {
       this.storage.deleteUTXO(utxo.getOutput().hash())
       const exit = new Exit(
         exitId,
         exitableAt,
-        Segment.fromBigNumber(segment)
+        segment
       )
       this.storage.setExit(exit)
       this.emit('exitStarted', { wallet: this })
