@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 
+const Logger = require('js-logger')
 const { ChainManager } = require('./index');
 const Rpc = require('./JsonRpc');
 const leveldown = require('leveldown');
@@ -26,9 +27,28 @@ async function main() {
     process.env.ROOTCHAIN_ADDRESS
   );
   const options = {
-    confirmation: process.env.MAINCHAIN_CONFIRMATION,
-    initialBlock: process.env.MAINCHAIN_INITIAL_BLOCK,
-    OwnershipPredicate: process.env.OWNERSHIP_PREDICATE
+    confirmation: process.env.MAINCHAIN_CONFIRMATION || 0,
+    initialBlock: process.env.MAINCHAIN_INITIAL_BLOCK || 1,
+    OwnershipPredicate: process.env.OWNERSHIP_PREDICATE,
+    logLevel: process.env.LOGLEVEL || 'warn'
+  }
+  console.log('options.confirmation', options.confirmation)
+  console.log('options.initialBlock', options.initialBlock)
+  console.log('options.logLevel', options.logLevel)
+  Logger.useDefaults()
+  switch(options.logLevel) {
+    case 'error':
+      Logger.setLevel(Logger.ERROR)
+      break
+    case 'warn':
+      Logger.setLevel(Logger.WARN)
+      break;
+    case 'debug':
+      Logger.setLevel(Logger.DEBUG)
+      break
+    case 'info':
+      Logger.setLevel(Logger.INFO)
+      break
   }
   await chainManager.start(
     Object.assign({}, options, getStorageOption()))

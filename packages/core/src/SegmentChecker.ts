@@ -99,7 +99,12 @@ export class SegmentChecker {
   }
 
   toObject() {
-    return this.leaves.map(l => l.encodeToTuple())
+    return this.leaves.map(l => {
+      return {
+          state: l.state,
+          segment: l.getSegment().pretty()
+      }
+    })
   }
 
 }

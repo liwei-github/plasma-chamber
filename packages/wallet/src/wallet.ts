@@ -624,7 +624,7 @@ export class ChamberWallet extends EventEmitter {
       if(tx2) {
         // _tx and segmentStartMap.get(start) are available for merge transaction
         tx = OwnershipPredicate.create(
-          tx2.getOutput().getSegment(),
+          _tx.getOutput().getSegment().add(tx2.getOutput().getSegment()),
           blkNum,
           this.predicatesManager.getNativePredicate('OwnershipPredicate'),
           this.wallet.address

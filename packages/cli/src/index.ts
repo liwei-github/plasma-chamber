@@ -78,6 +78,13 @@ program
     console.log('finished')
   })
 
+program
+  .command('merge')
+  .action(async function(options) {
+    await merge()
+    console.log('finished')
+  })
+
 program.parse(process.argv)
 
 
@@ -115,4 +122,11 @@ async function balance() {
   console.log('wallet synced')
   const result = await wallet.getBalance()
   console.log('balance=', result.toNumber())
+}
+
+async function merge() {
+  await wallet.init()
+  console.log('wallet initialized')
+  const result = await wallet.merge()
+  console.log(result)
 }
