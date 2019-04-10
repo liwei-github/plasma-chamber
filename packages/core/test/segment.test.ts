@@ -19,5 +19,33 @@ describe('Segment', () => {
     assert.equal(segment.start.toString(), '1000000');
   });
 
+  it('add', () => {
+    const segment1 = new Segment(
+      utils.bigNumberify('0'),
+      utils.bigNumberify('1000000'),
+      utils.bigNumberify('2000000'))
+    const segment2 = new Segment(
+      utils.bigNumberify('0'),
+      utils.bigNumberify('2000000'),
+      utils.bigNumberify('2500000'))
+    const segment_pattern1 = segment1.add(segment2)
+    const segment_pattern2 = segment2.add(segment1)
+    assert.equal(segment_pattern1.getAmount().toNumber(), 1500000);
+    assert.equal(segment_pattern2.getAmount().toNumber(), 1500000);
+  });
+
+  it('sub', () => {
+    const segment1 = new Segment(
+      utils.bigNumberify('0'),
+      utils.bigNumberify('1000000'),
+      utils.bigNumberify('2000000'))
+    const segment2 = new Segment(
+      utils.bigNumberify('0'),
+      utils.bigNumberify('1000000'),
+      utils.bigNumberify('1200000'))
+    const segment = segment1.sub(segment2)[0]
+    assert.equal(segment.getAmount().toNumber(), 800000);
+  });
+
 
 })
