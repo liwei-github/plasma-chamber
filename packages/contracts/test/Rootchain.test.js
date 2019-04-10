@@ -81,6 +81,20 @@ contract("RootChain", ([alice, bob, operator, user4, user5, admin]) => {
     assert.equal(minter, this.rootChain.address)
   });
 
+  describe("deposit", () => {
+
+    it("should fail to deposit 0", async () => {
+      // 0.0.1 gwei is 0 in plasma
+      // because msg.value / 1000000000 is 0
+      await assertRevert(this.rootChain.deposit(
+        {
+          from: alice,
+          value: '10000000'
+        }))
+    })
+
+  });
+
   describe("submit", () => {
 
     it("should submit", async () => {

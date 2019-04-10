@@ -326,6 +326,8 @@ def processDeposit(
   tokenId: uint256,
   amount: uint256
 ):
+  # amount should be greater than 0
+  assert amount > 0
   self.currentChildBlock += (1 + (self.currentChildBlock % 2))
   start: uint256 = self.totalDeposited[tokenId]
   self.totalDeposited[tokenId] += amount
