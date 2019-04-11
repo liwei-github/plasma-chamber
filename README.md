@@ -137,7 +137,7 @@ yarn start
 
 Open http://localhost:1234 in browser.
 
-## Use docker compose(not working now)
+## Use docker compose(for operation check)
 
 ```bash
 $ docker-compose up

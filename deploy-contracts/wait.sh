@@ -15,6 +15,6 @@ done
 
 echo "ganache-cli is up."
 
-cd packages/contracts && truffle migrate --network dockercompose
+cd packages/contracts && truffle migrate --network ${DEPLOYMENT_TARGET}
 #truffle migrate --network $DEPLOYMENT_TARGET
 echo "contract has been deployed."

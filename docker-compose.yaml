@@ -13,8 +13,8 @@ services:
       dockerfile: ./deploy-contracts/Dockerfile
     image: "plasma-chamber-deploy-contracts:development"
     command: sh ./wait.sh
-#    environment:
-#      - DEPLOYMENT_TARGET=dockercompose
+    environment:
+      - DEPLOYMENT_TARGET=dockercompose
     depends_on:
       - ganache-cli
   operator:
@@ -39,4 +39,3 @@ services:
     depends_on:
       - ganache-cli
       - deployer
-#
