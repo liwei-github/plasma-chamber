@@ -89,11 +89,7 @@ export class StateValidator {
       return true
     }
   }
-
-  insertDepositTx(deposit: IState) {
-    return this._insert(deposit)
-  }
-
+  
   startExit(segment: Segment) {
     this.leaves = this.leaves.filter(l => !l.getSegment().toBigNumber().eq(segment.toBigNumber()))
   }

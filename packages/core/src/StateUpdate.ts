@@ -1,5 +1,5 @@
 import { Segment } from './segment';
-import { BigNumber, hashMessage } from 'ethers/utils';
+import { BigNumber } from 'ethers/utils';
 import { Address, RLPItem, Hash } from './helpers/types';
 import { utils, constants } from 'ethers';
 import RLP = utils.RLP

@@ -1,6 +1,5 @@
 import { SignedTransaction } from './SignedTransaction'
 import { StateUpdate, PredicatesManager } from './StateUpdate'
-import { Segment } from './segment'
 import { StateValidator } from './state/StateValidator';
 
 export class SegmentChecker extends StateValidator {
@@ -29,10 +28,6 @@ export class SegmentChecker extends StateValidator {
 
   insertDepositTx(deposit: StateUpdate) {
     return this._insert(deposit)
-  }
-
-  startExit(segment: Segment) {
-    this.leaves = this.leaves.filter(l => !l.getSegment().toBigNumber().eq(segment.toBigNumber()))
   }
 
   getStateUpdates(): StateUpdate[] {

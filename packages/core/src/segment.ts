@@ -135,6 +135,11 @@ export class Segment {
     && this.end.gte(segment.end)
   }
 
+  /**
+   * isHit
+   * @description check collision of segments 
+   * @param segment target segment
+   */
   isHit(segment: Segment) {
     return this.getTokenId().eq(segment.getTokenId())
     && this.start.lt(segment.end)

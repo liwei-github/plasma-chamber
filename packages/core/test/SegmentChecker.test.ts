@@ -73,7 +73,7 @@ describe('SegmentChecker', () => {
     assert.isFalse(segmentChecker.isContain(invalidTx))
   })
 
-  it('should succeed check contain', async () => {
+  it('should succeed to check contain', async () => {
     const segmentChecker = new SegmentChecker(predicateManager)
     segmentChecker.insertDepositTx(tx1)
     assert.isTrue(segmentChecker.isContain(signedTx2))

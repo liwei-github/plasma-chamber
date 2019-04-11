@@ -38,11 +38,7 @@ export class StateManager extends StateValidator {
       [new SumMerkleProof(1, 0, depositTx.getSegment(), '', '0x00000050')],
       depositTx.getBlkNum()))
   }
-
-  startExit(segment: Segment) {
-    this.leaves = this.leaves.filter(l => !l.getSegment().toBigNumber().eq(segment.toBigNumber()))
-  }
-
+  
   getSignedTransactionWithProofs(): SignedTransactionWithProof[] {
     return this.getLeaves() as SignedTransactionWithProof[]
   }
