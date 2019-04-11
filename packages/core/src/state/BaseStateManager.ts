@@ -19,7 +19,7 @@ export interface IState {
   getRawState(): string
 }
 
-export class StateValidator {
+export class BaseStateManager {
 
   predicatesManager: PredicatesManager
   leaves: IState[]

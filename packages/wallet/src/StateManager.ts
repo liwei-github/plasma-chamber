@@ -5,11 +5,10 @@ import {
   StateUpdate,
   SumMerkleProof,
   PredicatesManager,
-  Segment,
-  StateValidator
+  BaseStateManager
 } from '@layer2/core'
 
-export class StateManager extends StateValidator {
+export class StateManager extends BaseStateManager {
 
   constructor(predicatesManager: PredicatesManager) {
     super(predicatesManager)
@@ -38,7 +37,7 @@ export class StateManager extends StateValidator {
       [new SumMerkleProof(1, 0, depositTx.getSegment(), '', '0x00000050')],
       depositTx.getBlkNum()))
   }
-  
+
   getSignedTransactionWithProofs(): SignedTransactionWithProof[] {
     return this.getLeaves() as SignedTransactionWithProof[]
   }

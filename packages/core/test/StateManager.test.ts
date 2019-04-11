@@ -1,10 +1,10 @@
 import { describe, it } from "mocha"
 import { assert } from "chai"
 import { constants, utils, ethers } from "ethers"
-import { SegmentChecker } from '../src/SegmentChecker'
+import { StateManager } from '../src/state/StateManager'
 import { OwnershipPredicate, PredicatesManager, Segment, SignedTransaction } from "../src";
 
-describe('SegmentChecker', () => {
+describe('StateManager', () => {
 
   const AlicePrivateKey = '0xe88e7cda6f7fae195d0dcda7ccb8d733b8e6bb9bd0bc4845e1093369b5dc2257'
   const BobPrivateKey = '0x855364a82b6d1405211d4b47926f4aa9fa55175ab2deaf2774e28c2881189cff'
@@ -67,32 +67,32 @@ describe('SegmentChecker', () => {
   sinedMergeTx.sign(AlicePrivateKey)
 
   it('should fail to check contain', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     const insertResults = segmentChecker.insert(signedTx1)
     assert.deepEqual(insertResults, [true])
     assert.isFalse(segmentChecker.isContain(invalidTx))
   })
 
   it('should succeed to check contain', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     segmentChecker.insertDepositTx(tx1)
     assert.isTrue(segmentChecker.isContain(signedTx2))
   })
 
   it('should fail to check contain from empty', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     assert.isFalse(segmentChecker.isContain(signedTx2))
   })
 
   it('should succeed to startExit', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     segmentChecker.insert(signedTx1)
     segmentChecker.startExit(Segment.ETH(ethers.utils.bigNumberify(0), ethers.utils.bigNumberify(10000000)))
     assert.equal(segmentChecker.leaves.length, 0)
   })
 
   it('should succeed to insert', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     const insertResults = segmentChecker.insert(signedTx1)
     assert.deepEqual(insertResults, [true])
     assert.isTrue(segmentChecker.isContain(signedTx2))
@@ -100,7 +100,7 @@ describe('SegmentChecker', () => {
   })
 
   it('should fail to insert twice', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     segmentChecker.insert(signedTx1)
     const insertResults = segmentChecker.insert(signedTx1)
     assert.deepEqual(insertResults, [false])
@@ -108,7 +108,7 @@ describe('SegmentChecker', () => {
   })
 
   it('should succeed to spend', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     segmentChecker.insert(signedTx1)
     segmentChecker.spend(signedTx2)
     assert.equal(segmentChecker.leaves.length, 1)
@@ -117,7 +117,7 @@ describe('SegmentChecker', () => {
   })
 
   it('should fail to spend twice', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     segmentChecker.insert(signedTx1)
     segmentChecker.spend(signedTx2)
     const spendResults = segmentChecker.spend(signedTx1)
@@ -128,7 +128,7 @@ describe('SegmentChecker', () => {
   })
 
   it('should be ordered', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     segmentChecker.insert(signedTx2)
     segmentChecker.insert(signedTx3)
     segmentChecker.insert(signedTx5)
@@ -138,7 +138,7 @@ describe('SegmentChecker', () => {
   })
 
   it('succeed to insert merge state', async () => {
-    const segmentChecker = new SegmentChecker(predicateManager)
+    const segmentChecker = new StateManager(predicateManager)
     segmentChecker.insert(signedTx2)
     segmentChecker.insert(signedTx4)
     segmentChecker.insert(signedTx5)

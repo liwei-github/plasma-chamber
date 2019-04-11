@@ -4,7 +4,7 @@ import { Address, RLPItem, Hash } from './helpers/types';
 import { utils, constants } from 'ethers';
 import RLP = utils.RLP
 import { DecoderUtility } from './utils/Decoder'
-import { IState } from './state/StateValidator'
+import { IState } from './state/BaseStateManager'
 
 export class StateUpdate implements IState {
   segment: Segment

@@ -1,6 +1,6 @@
 import {
   Segment,
-  SegmentChecker,
+  StateManager,
   SegmentedBlock,
   SignedTransactionWithProof,
   ExclusionProof,
@@ -120,7 +120,7 @@ export class SegmentHistory {
   }
 
   async verify(
-    segmentChecker: SegmentChecker,
+    segmentChecker: StateManager,
     blkNum: number,
     root: string
   ) {
@@ -202,12 +202,12 @@ export class SegmentHistoryManager {
   }
 
   async verifyHistory(key: string) {
-    const segmentChecker = new SegmentChecker(this.predicatesManager)
+    const segmentChecker = new StateManager(this.predicatesManager)
     return await this.loadAndVerify(segmentChecker, key, 0)
   }
 
   private async loadAndVerify(
-    segmentChecker: SegmentChecker,
+    segmentChecker: StateManager,
     key: string,
     fromBlkNum: number
   ): Promise<StateUpdate[]> {
@@ -222,7 +222,7 @@ export class SegmentHistoryManager {
   }
 
   private async verifyPart(
-    segmentChecker: SegmentChecker,
+    segmentChecker: StateManager,
     key: string,
     blockHeaders: PlasmaBlockHeader[]
   ): Promise<StateUpdate[]> {
@@ -243,7 +243,7 @@ export class SegmentHistoryManager {
   }
 
   private async verifyDeposit(
-    segmentChecker: SegmentChecker,
+    segmentChecker: StateManager,
     blkNum: number,
     deposit: StateUpdate
   ) {
@@ -251,7 +251,7 @@ export class SegmentHistoryManager {
   }
 
   private async verifyBlock(
-    segmentChecker: SegmentChecker,
+    segmentChecker: StateManager,
     key: string,
     blockHeader: WaitingBlockWrapper,
     retryCounter: number

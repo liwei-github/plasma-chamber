@@ -1,8 +1,8 @@
-import { SignedTransaction } from './SignedTransaction'
-import { StateUpdate, PredicatesManager } from './StateUpdate'
-import { StateValidator } from './state/StateValidator';
+import { SignedTransaction } from '../SignedTransaction'
+import { StateUpdate, PredicatesManager } from '../StateUpdate'
+import { BaseStateManager } from './BaseStateManager';
 
-export class SegmentChecker extends StateValidator {
+export class StateManager extends BaseStateManager {
 
   constructor(predicatesManager: PredicatesManager) {
     super(predicatesManager)

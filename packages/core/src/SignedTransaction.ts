@@ -1,5 +1,4 @@
 import { utils, ethers } from "ethers"
-import RLP = utils.RLP
 import {
   HexString,
   Signature,
@@ -13,8 +12,8 @@ import {
 } from './merkle'
 import { HexUtil } from './utils/hex'
 import { Segment } from './segment';
-import { StateUpdate, PredicatesManager } from './StateUpdate';
-import { IState } from './state/StateValidator';
+import { StateUpdate, PredicatesManager } from './StateUpdate'
+import { IState } from './state/BaseStateManager'
 
 /**
  * SignedTransaction is the transaction and its signatures
