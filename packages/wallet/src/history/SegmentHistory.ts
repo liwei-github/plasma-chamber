@@ -217,7 +217,7 @@ export class SegmentHistoryManager {
       await this.verifyPart(segmentChecker, key, blockHeaders)
       return this.loadAndVerify(segmentChecker, key, fromBlkNum + 100)
     } else {
-      return segmentChecker.leaves
+      return segmentChecker.getStateUpdates()
     }
   }
 
@@ -238,7 +238,7 @@ export class SegmentHistoryManager {
         key,
         blockHeaders)
     } else {
-      return segmentChecker.leaves
+      return segmentChecker.getStateUpdates()
     }
   }
 

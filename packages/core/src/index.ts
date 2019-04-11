@@ -15,6 +15,7 @@ export {
   SignedTransactionWithProof
 } from './SignedTransaction'
 export * from './StateUpdate'
+export * from './state/StateValidator'
 export {
   Segment
 } from './segment'

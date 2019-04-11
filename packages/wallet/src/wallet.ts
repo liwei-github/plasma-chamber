@@ -21,6 +21,7 @@ import {
   ChamberResult,
   ChamberResultError,
   ChamberOk,
+  SegmentChecker,
   SwapRequest,
   StateUpdate,
   OwnershipPredicate,
@@ -31,6 +32,7 @@ import { Exit, WaitingBlockWrapper, TokenType, UserAction, UserActionUtil } from
 import { Contract } from 'ethers'
 import { BigNumber } from 'ethers/utils';
 import { PlasmaSyncher } from './client/PlasmaSyncher'
+import { StateManager } from './StateManager'
 import artifact from './assets/RootChain.json'
 import { SegmentHistoryManager } from './history/SegmentHistory';
 if(!artifact.abi) {
@@ -69,6 +71,7 @@ export class ChamberWallet extends EventEmitter {
   private segmentHistoryManager: SegmentHistoryManager
   public isMerchant: boolean
   private predicatesManager: PredicatesManager
+  private stateManager: StateManager
 
   /**
    * 
@@ -210,6 +213,7 @@ export class ChamberWallet extends EventEmitter {
     })
     this.predicatesManager = new PredicatesManager()
     this.predicatesManager.addPredicate(this.options.OwnershipPredicate, 'OwnershipPredicate')
+    this.stateManager = new StateManager(this.predicatesManager)
     this.segmentHistoryManager = new SegmentHistoryManager(storage, this.client, this.predicatesManager)
     this.plasmaSyncher.on('PlasmaBlockHeaderAdded', (e: any) => {
       this.segmentHistoryManager.appendBlockHeader(e.blockHeader as WaitingBlockWrapper)
@@ -236,6 +240,9 @@ export class ChamberWallet extends EventEmitter {
    */
   async init() {
     await this.storage.init()
+    const state: any[] = await this.storage.getState()
+    console.log(state)
+    this.stateManager.deserialize(state)
     this.exitableRangeManager = await this.storage.loadExitableRangeManager()
     this.loadedBlockNumber = await this.storage.getLoadedPlasmaBlockNumber()
     if(this.isMerchant) {
@@ -278,26 +285,6 @@ export class ChamberWallet extends EventEmitter {
   /**
    * @ignore
    */
-  private _spend(newTx: SignedTransactionWithProof, newStateUpdate: StateUpdate): boolean {
-    return this.getUTXOArray().filter((tx) => {
-      if(tx.getOutput().verifyDeprecation(
-        newTx.getTxHash(),
-        newStateUpdate,
-        newTx.getTransactionWitness(),
-        this.predicatesManager
-      )) {
-        this.storage.deleteUTXO(tx.getOutput().hash())
-        tx.spend(newStateUpdate).forEach(newTx => {
-          this.storage.addUTXO(newTx)
-        })
-      }
-      return true
-    }).length > 0
-  }
-
-  /**
-   * @ignore
-   */
   private updateBlock(block: Block) {
     this.getUTXOArray().forEach((tx) => {
       const segmentedBlock = block.getSegmentedBlock(tx.getOutput().getSegment())
@@ -307,19 +294,18 @@ export class ChamberWallet extends EventEmitter {
       })
     })
     const tasks = block.getUserTransactionAndProofs(this.wallet.address, this.predicatesManager).map(async tx => {
-      tx.getSignedTx().getStateUpdates().forEach(stateUpdate => {
-        if(this._spend(tx, stateUpdate)) {
-          this.emit('send', {tx: tx})
-          this.storage.addUserAction(tx.blkNum.toNumber(), UserActionUtil.createSend(tx))
-        }
-      })
+      if(this.stateManager.spend(tx)) {
+        this.emit('send', {tx: tx})
+        this.storage.addUserAction(tx.blkNum.toNumber(), UserActionUtil.createSend(tx))
+      }
       if(tx.getOutput().isOwnedBy(this.wallet.address, this.predicatesManager)) {
         this.segmentHistoryManager.init(
           tx.getOutput().hash(),
           tx.getOutput().getSegment())
         const verified = await this.verifyHistory(tx)
         if(verified) {
-          this.storage.addUTXO(tx)
+          this.stateManager.insert(tx)
+          this.flushCurrentState()
           this.emit('receive', {tx: tx})
           this.storage.addUserAction(tx.blkNum.toNumber(), UserActionUtil.createReceive(tx))
         }
@@ -327,6 +313,7 @@ export class ChamberWallet extends EventEmitter {
     }).filter(p => !!p)
     this.loadedBlockNumber = block.getBlockNumber()
     this.storage.setLoadedPlasmaBlockNumber(this.loadedBlockNumber)
+    this.flushCurrentState()
     return tasks
   }
 
@@ -355,21 +342,21 @@ export class ChamberWallet extends EventEmitter {
       this.segmentHistoryManager.init(
         depositTx.hash(),
         segment)
-      this.storage.addUTXO(new SignedTransactionWithProof(
-        new SignedTransaction([depositTx]),
-        0,
-        '0x',
-        '0x',
-        ethers.constants.Zero,
-        // 0x00000050 is header. 0x0050 is size of deposit transaction
-        [new SumMerkleProof(1, 0, segment, '', '0x00000050')],
-        blkNum))
+      this.stateManager.insertDepositTx(depositTx)
+      this.flushCurrentState()
     }
     this.segmentHistoryManager.appendDeposit(depositTx)
     this.exitableRangeManager.extendRight(end)
     this.storage.saveExitableRangeManager(this.exitableRangeManager)
     this.emit('deposited', { wallet: this, tx: depositTx})
     return depositTx
+  }
+
+  /**
+   * @description flush current stateUpdates to storage
+   */
+  private flushCurrentState() {
+    this.storage.setState(this.stateManager.serialize())
   }
 
   /**
@@ -386,7 +373,8 @@ export class ChamberWallet extends EventEmitter {
       return utxo.getOutput().getSegment().toBigNumber().eq(segment.toBigNumber())
     })[0]
     if(utxo) {
-      this.storage.deleteUTXO(utxo.getOutput().hash())
+      this.stateManager.startExit(utxo.getSegment())
+      this.flushCurrentState()
       const exit = new Exit(
         exitId,
         exitableAt,
@@ -426,7 +414,7 @@ export class ChamberWallet extends EventEmitter {
   }
 
   getUTXOArray(): SignedTransactionWithProof[] {
-    let arr = this.storage.getUTXOList()
+    let arr = this.stateManager.getSignedTransactionWithProofs()
     arr.sort((a: SignedTransactionWithProof, b: SignedTransactionWithProof) => {
       const aa = a.getOutput().getSegment().start
       const bb = b.getOutput().getSegment().start
@@ -483,7 +471,8 @@ export class ChamberWallet extends EventEmitter {
     if(utxos.length > 0) {
       tx.checkVerified(true)
       // update
-      this.storage.addUTXO(tx)
+      this.stateManager.insert(tx)
+      this.flushCurrentState()
       this.emit('updated', {wallet: this})
       return true
     } else {

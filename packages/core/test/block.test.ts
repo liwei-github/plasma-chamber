@@ -152,7 +152,38 @@ describe('Block', () => {
       assert.equal(deserialized.merkleHash(), sinedTx.merkleHash())
       assert.equal(deserialized.getProof().segment.toBigNumber().toString(), sinedTx.getProof().segment.toBigNumber().toString())
     });
-  
+
+    it('getSubStateUpdate', () => {
+      const segment = Segment.ETH(
+        utils.bigNumberify('5100000'),
+        utils.bigNumberify('5900000'))
+      const block = new Block()
+      block.setBlockNumber(2)
+      block.appendTx(tx1)
+      block.appendTx(tx2)
+      block.setSuperRoot(block.checkSuperRoot())
+      const sinedTx = block.getSignedTransactionWithProof(tx1.hash())[0]
+      const stateUpdate = sinedTx.getSubStateUpdate(segment)
+      assert.equal(stateUpdate.getRawState(), sinedTx.getRawState())
+    });
+
+    it('getRemainingState', () => {
+      const segment = Segment.ETH(
+        utils.bigNumberify('5100000'),
+        utils.bigNumberify('5900000'))
+      const stateUpdate = OwnershipPredicate.create(segment, blkNum, predicate, AliceAddress)
+      const block = new Block()
+      block.setBlockNumber(2)
+      block.appendTx(tx1)
+      block.appendTx(tx2)
+      block.setSuperRoot(block.checkSuperRoot())
+      const sinedTx = block.getSignedTransactionWithProof(tx1.hash())[0]
+      const stateUpdates = sinedTx.getRemainingState(stateUpdate)
+      assert.equal(stateUpdates.length, 2)
+      assert.equal(stateUpdates[0].getSegment().start.toString(), '5000000')
+      assert.equal(stateUpdates[0].getSegment().end.toString(), '5100000')
+    });
+
   })
 
 })
