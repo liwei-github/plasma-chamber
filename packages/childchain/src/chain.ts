@@ -100,9 +100,7 @@ export class Chain {
       return new ChamberResultError(ChainErrorFactory.NoValidTransactions())
     }
     const tasks = this.txQueue.map(async tx => {
-      const inputChecked = this.segmentChecker.isContain(tx)
-      if(inputChecked) {
-        this.segmentChecker.spend(tx)
+      if(this.segmentChecker.spend(tx).length > 0) {
         block.appendTx(tx)
       }
     })

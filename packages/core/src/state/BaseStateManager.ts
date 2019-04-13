@@ -29,8 +29,26 @@ export class BaseStateManager {
     this.leaves = []
   }
 
+  /**
+   * get available states in certain range
+   * @param range 
+   */
   private getLeavesInRange(range: Segment) {
     return this.leaves.filter(l => range.isHit(l.getSegment()))
+  }
+
+  /**
+   * check stateUpdate can deprecate targets or not.
+   */
+  private canDeprecation(
+    targets: IState[],
+    hash: string,
+    stateUpdate: IState,
+    deprecationWitness: string
+  ) {
+    return targets.filter(l => {
+      return l.verifyDeprecation(hash, stateUpdate.getSubStateUpdate(l.getSegment()), deprecationWitness, this.predicatesManager)
+    }).length == targets.length && targets.length > 0
   }
 
   _isContain(
@@ -39,20 +57,16 @@ export class BaseStateManager {
     deprecationWitness: string
   ) {
     const targets = this.getLeavesInRange(stateUpdate.getSegment())
-    return targets.filter(l => {
-      return l.verifyDeprecation(hash, stateUpdate.getSubStateUpdate(l.getSegment()), deprecationWitness, this.predicatesManager)
-    }).length == targets.length && targets.length > 0
+    return this.canDeprecation(targets, hash, stateUpdate, deprecationWitness)
   }
 
   _spend(
     hash: string,
     stateUpdate: IState,
     deprecationWitness: string
-  ) {
+  ): IState[] {
     const targets = this.getLeavesInRange(stateUpdate.getSegment())
-    const canDeprecate = targets.filter(l => {
-      return l.verifyDeprecation(hash, stateUpdate.getSubStateUpdate(l.getSegment()), deprecationWitness, this.predicatesManager)
-    }).length == targets.length
+    const canDeprecate = this.canDeprecation(targets, hash, stateUpdate, deprecationWitness)
     if(canDeprecate) {
       this.leaves = this.leaves.filter(l => {
         return targets.map(t => t.getStateHash()).indexOf(l.getStateHash()) < 0
@@ -62,9 +76,9 @@ export class BaseStateManager {
           this.leaves.push(newTxo)
         })
       })
-      return true
+      return targets
     } else {
-      return false
+      return []
     }
   }
 

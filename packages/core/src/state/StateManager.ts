@@ -1,6 +1,6 @@
 import { SignedTransaction } from '../SignedTransaction'
 import { StateUpdate, PredicatesManager } from '../StateUpdate'
-import { BaseStateManager } from './BaseStateManager';
+import { BaseStateManager, IState } from './BaseStateManager';
 
 export class StateManager extends BaseStateManager {
 
@@ -14,10 +14,10 @@ export class StateManager extends BaseStateManager {
     }, <boolean>true)
   }
 
-  spend(tx: SignedTransaction) {
-    return tx.getStateUpdates().map((i) => {
-      return this._spend(tx.getTxHash(), i, tx.getTransactionWitness())
-    })
+  spend(tx: SignedTransaction): IState[] {
+    return tx.getStateUpdates().reduce<IState[]>((spentState, i) => {
+      return spentState.concat(this._spend(tx.getTxHash(), i, tx.getTransactionWitness()))
+    }, [])
   }
 
   insert(tx: SignedTransaction) {

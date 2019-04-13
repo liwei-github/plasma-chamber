@@ -292,7 +292,7 @@ export class ChamberWallet extends EventEmitter {
       })
     })
     const tasks = block.getUserTransactionAndProofs(this.wallet.address, this.predicatesManager).map(async tx => {
-      if(this.stateManager.spend(tx)) {
+      if(this.stateManager.spend(tx).length > 0) {
         this.emit('send', {tx: tx})
         this.storage.addUserAction(tx.blkNum.toNumber(), UserActionUtil.createSend(tx))
       }

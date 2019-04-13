@@ -122,7 +122,7 @@ describe('StateManager', () => {
     segmentChecker.spend(signedTx2)
     const spendResults = segmentChecker.spend(signedTx1)
     assert.equal(segmentChecker.leaves.length, 1)
-    assert.deepEqual(spendResults, [false])
+    assert.deepEqual(spendResults, [])
     assert.isFalse(segmentChecker.isContain(signedTx1))
     assert.isTrue(segmentChecker.isContain(signedTx3))
   })
