@@ -11,7 +11,7 @@ describe('StateManager', () => {
   const AliceAddress = utils.computeAddress(AlicePrivateKey)
   const BobAddress = utils.computeAddress(BobPrivateKey)
 
-  const predicate = AliceAddress
+  const predicate = constants.AddressZero
   const predicateManager = new PredicatesManager()
   predicateManager.addPredicate(predicate, 'OwnershipPredicate')
 
