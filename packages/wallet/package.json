@@ -30,6 +30,7 @@
     "@types/mocha": "^5.2.5",
     "@types/mqtt": "^2.5.0",
     "@types/node-fetch": "^2.1.4",
+    "@types/isomorphic-fetch": "^0.0.35",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
@@ -37,6 +38,10 @@
     "js-logger": "^1.6.0",
     "mqtt": "^2.18.8",
     "node-fetch": "^2.3.0",
+    "es6-promise": "^4.2.6",
+    "isomorphic-fetch": "2.2.1",
+    "chrome-remote-interface": "^0.27.1",
+    "remap-istanbul": "^0.13.0",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "typescript": "^3.2.2"
