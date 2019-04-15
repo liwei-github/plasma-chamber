@@ -59,6 +59,13 @@ module.exports = {
       },
       gasPrice: 10000000000,
       network_id: 42
+    },
+    dockercompose: {
+      host: "host.docker.internal",
+      port: 8545,
+      network_id: "*",
+      gas: 6700000,
+      gasPrice: 10000000000,
     }
   },
 
