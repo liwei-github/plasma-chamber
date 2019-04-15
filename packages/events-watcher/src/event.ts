@@ -96,7 +96,7 @@ export class EventWatcher {
     }, this.options.interval);
   }
 
-  cancel() {
+  cancel():void {
     if(this.timer) {
       clearTimeout(this.timer)
     }
