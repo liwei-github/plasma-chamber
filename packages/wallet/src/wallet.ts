@@ -283,14 +283,13 @@ export class ChamberWallet extends EventEmitter {
   /**
    * @ignore
    */
-  private updateBlock(block: Block) {
-    this.getUTXOArray().forEach((tx) => {
+  private async updateBlock(block: Block) {
+    const tasksForExistingStates = this.getUTXOArray().map(async (tx) => {
       const segmentedBlock = block.getSegmentedBlock(tx.getOutput().getSegment())
       const key = tx.getOutput().hash()
-      this.segmentHistoryManager.appendSegmentedBlock(key, segmentedBlock).then(()=>{
-        
-      })
+      return await this.segmentHistoryManager.appendSegmentedBlock(key, segmentedBlock)
     })
+    await Promise.all(tasksForExistingStates)
     const tasks = block.getUserTransactionAndProofs(this.wallet.address, this.predicatesManager).map(async tx => {
       if(this.stateManager.spend(tx).length > 0) {
         this.emit('send', {tx: tx})

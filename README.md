@@ -65,7 +65,7 @@ Plasma is often times expected to be applied to several kinds of Dapps such as g
 
 You need to install them before deploying Plasma Chamber contracts. 
 
-* Node.js v8.11.3 or higher
+* Node.js v8.11.3 or v8.15.1
     * You can install Node.js from here; https://nodejs.org/en/
 * ganache-cli latest version
     * You need to install npm or Yarn first 
@@ -95,6 +95,7 @@ git clone https://github.com/cryptoeconomicslab/plasma-chamber
 cd plasma-chamber 
 lerna bootstrap
 cd packages/contracts
+# switch python3.x
 yarn build
 truffle migrate --network local
 ```
@@ -104,6 +105,7 @@ truffle migrate --network local
 ```sh
 cd packages/operator
 cp ../../.env.sample ./.env
+npm install
 node -r dotenv/config lib/entry
 ```
 
@@ -134,6 +136,12 @@ yarn start
 ```
 
 Open http://localhost:1234 in browser.
+
+## Use docker compose(for operation check)
+
+```bash
+$ docker-compose up
+```
 
 # Architecture
 
