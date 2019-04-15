@@ -128,14 +128,14 @@ You need envs described [here](https://github.com/cryptoeconomicslab/plasma-cham
 ## Run wallet
 
 ```sh
-git clone https://github.com/cryptoeconomicslab/plasma-wallet
-cd plasma-wallet
+git clone https://github.com/cryptoeconomicslab/wallet.git
+cd wallet
 yarn install
 cp .env.example .env
 yarn start
 ```
 
-Open http://localhost:1234 in browser.
+Open http://localhost:8080 in browser.
 
 ## Use docker compose(for operation check)
 
