@@ -15,10 +15,11 @@ export {
   SignedTransactionWithProof
 } from './SignedTransaction'
 export * from './StateUpdate'
+export * from './state/BaseStateManager'
 export {
   Segment
 } from './segment'
-export { SegmentChecker } from './SegmentChecker'
+export { StateManager } from './state/StateManager'
 
 export {
   SumMerkleTreeNode,

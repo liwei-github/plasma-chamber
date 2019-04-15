@@ -4,8 +4,9 @@ import { Address, RLPItem, Hash } from './helpers/types';
 import { utils, constants } from 'ethers';
 import RLP = utils.RLP
 import { DecoderUtility } from './utils/Decoder'
+import { IState } from './state/BaseStateManager'
 
-export class StateUpdate {
+export class StateUpdate implements IState {
   segment: Segment
   blkNum: BigNumber
   predicate: Address
@@ -30,6 +31,10 @@ export class StateUpdate {
 
   getBlkNum(): BigNumber {
     return this.blkNum
+  }
+
+  getRawState() {
+    return this.state
   }
 
   serialize() {
@@ -73,8 +78,24 @@ export class StateUpdate {
       stateBytes]))
   }
 
+  getStateHash() {
+    return this.hash()
+  }
+
   hash(): string {
     return utils.keccak256(this.encode())
+  }
+
+  getSubStateUpdate(newSegment: Segment): StateUpdate {
+    if(this.segment.isContain(newSegment)) {
+      return new StateUpdate(
+        newSegment,
+        this.blkNum,
+        this.predicate,
+        this.state)
+    } else {
+      return this
+    }
   }
 
   getRemainingState(

@@ -126,6 +126,8 @@ class ChainManager {
     if(blockTime > 0) {
       this.timer = setTimeout(generateBlock, blockTime);
     }
+    
+    Logger.debug('Current State: ', this.chain.getCurrentSegments())
 
     rootChainEventListener.addEvent('BlockSubmitted', async (e) => {
       Logger.info(
@@ -137,7 +139,7 @@ class ChainManager {
         e.values._root,
         e.values._blkNum,
         e.values._timestamp);
-      Logger.debug('Current State', this.chain.getCurrentSegments())
+      Logger.debug('Current State: ', this.chain.getCurrentSegments())
     })
     rootChainEventListener.addEvent('ListingEvent', async (e) => {
       Logger.debug(

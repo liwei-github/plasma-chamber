@@ -11,19 +11,16 @@ import { Exit, TokenType, UserAction } from '../models';
 export class WalletStorage {
   storage: IStorage
   private tokens: TokenType[]
-  private utxos: Map<string, string>
   private exitList: Map<string, string>
 
   constructor(storage: IStorage) {
     this.storage = storage
     this.tokens = []
-    this.utxos = new Map<string, string>()
     this.exitList = new Map<string, string>()
   }
 
   async init() {
     this.tokens = await this.loadTokens()
-    this.utxos = await this.loadUTXO()
     this.exitList = await this.loadExits()
   }
 
@@ -52,11 +49,6 @@ export class WalletStorage {
     await this.set('loadedBlockNumber', n)
   }
 
-  addUTXO(tx: SignedTransactionWithProof) {
-    this.utxos.set(tx.getOutput().hash(), JSON.stringify(tx.serialize()))
-    this.storeMap('utxos', this.utxos)
-  }
-
   /**
    * @ignore
    */
@@ -77,27 +69,12 @@ export class WalletStorage {
     await this.set('tokens', this.tokens)
   }
   
-  /**
-   * @ignore
-   */
-  private async loadUTXO() {
-    return this.loadMap<string>('utxos')
+  async getState(): Promise<any> {
+    return this.get('state', [])
   }
 
-  /**
-   * @ignore
-   */
-  deleteUTXO(key: string) {
-    this.utxos.delete(key)
-    this.storeMap('utxos', this.utxos)
-  }
-
-  getUTXOList(): SignedTransactionWithProof[] {
-    const arr: SignedTransactionWithProof[] = []
-    this.utxos.forEach(value => {
-      arr.push(SignedTransactionWithProof.deserialize(JSON.parse(value)))
-    })
-    return arr
+  async setState(utxo: any) {
+    this.set('state', utxo)
   }
 
   setExit(exit: Exit) {

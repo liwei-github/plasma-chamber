@@ -135,6 +135,17 @@ export class Segment {
     && this.end.gte(segment.end)
   }
 
+  /**
+   * isHit
+   * @description check collision of segments 
+   * @param segment target segment
+   */
+  isHit(segment: Segment) {
+    return this.getTokenId().eq(segment.getTokenId())
+    && this.start.lt(segment.end)
+    && this.end.gt(segment.start)
+  }
+
   add(segment: Segment): Segment {
     if(this.end.eq(segment.start)) {
       return new Segment(
@@ -164,7 +175,11 @@ export class Segment {
       segment.end,
       this.end
     )
-    return [s1, s2].filter(s => !s.getAmount().eq(0))
+    return [s1, s2].filter(s => s.getAmount().gt(0))
+  }
+
+  clone() {
+    return Segment.deserialize(this.serialize())
   }
 
   pretty() {

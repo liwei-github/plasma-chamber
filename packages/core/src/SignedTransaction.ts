@@ -1,5 +1,4 @@
 import { utils, ethers } from "ethers"
-import RLP = utils.RLP
 import {
   HexString,
   Signature,
@@ -13,7 +12,8 @@ import {
 } from './merkle'
 import { HexUtil } from './utils/hex'
 import { Segment } from './segment';
-import { StateUpdate } from './StateUpdate';
+import { StateUpdate, PredicatesManager } from './StateUpdate'
+import { IState } from './state/BaseStateManager'
 
 /**
  * SignedTransaction is the transaction and its signatures
@@ -120,7 +120,7 @@ export class SignedTransaction {
 /**
  * SignedTransactionWithProof is the transaction and its signatures and proof
  */
-export class SignedTransactionWithProof {
+export class SignedTransactionWithProof implements IState {
   signedTx: SignedTransaction
   stateIndex: number
   proofs: SumMerkleProof[]
@@ -179,10 +179,61 @@ export class SignedTransactionWithProof {
     return this.getOutput().encode()
   }
 
+  getStateHash() {
+    return this.getOutput().hash()
+  }
+
+  getRawState() {
+    return this.getOutput().getRawState()
+  }
+
+  verifyDeprecation(
+    hash: Hash,
+    newStateUpdate: StateUpdate,
+    deprecationWitness: string,
+    predicatesManager: PredicatesManager
+  ): boolean {
+    return this.getOutput().verifyDeprecation(
+      hash,
+      newStateUpdate,
+      deprecationWitness,
+      predicatesManager
+    )
+  }
+
+  getSubStateUpdate(newSegment: Segment): StateUpdate {
+    if(this.getSegment().isContain(newSegment)) {
+      return this.getOutput().getSubStateUpdate(newSegment)
+    } else {
+      return this.getOutput()
+    }
+  }
+
+  getRemainingState(
+    stateUpdate: StateUpdate
+  ): IState[] {
+    return this.getOutput().getRemainingState(stateUpdate).map(newTxo => {
+      return new SignedTransactionWithProof(
+        this.signedTx,
+        this.stateIndex,
+        this.superRoot,
+        this.root,
+        this.timestamp,
+        this.proofs,
+        this.blkNum,
+        newTxo
+      )
+    })    
+  }
+
   getSegment() {
+    return this.getOutput().getSegment()
+  }
+
+  getOriginalSegment() {
     return this.proofs[this.stateIndex].segment
   }
-  
+
   getSuperRoot() {
     return this.superRoot
   }
@@ -329,23 +380,6 @@ export class SignedTransactionWithProof {
       utils.bigNumberify(data.blkNum),
       StateUpdate.deserialize(data.stateUpdate)
     ).checkVerified(data.v)
-  }
-
-  spend(
-    stateUpdate: StateUpdate
-  ) {
-    return this.getOutput().getRemainingState(stateUpdate).map(newTxo => {
-      return new SignedTransactionWithProof(
-        this.signedTx,
-        this.stateIndex,
-        this.superRoot,
-        this.root,
-        this.timestamp,
-        this.proofs,
-        this.blkNum,
-        newTxo
-      )
-    })
   }
 
 }

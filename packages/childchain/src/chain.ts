@@ -7,7 +7,7 @@ import {
   Block,
   PredicatesManager, OwnershipPredicate, Address,
   Segment,
-  SegmentChecker,
+  StateManager,
   SignedTransactionWithProof
 } from '@layer2/core'
 import { ChainErrorFactory } from './error'
@@ -29,7 +29,7 @@ export class Chain {
   txFilter: TxFilter
   numTokens: number
   swapManager: SwapManager
-  segmentChecker: SegmentChecker
+  segmentChecker: StateManager
   predicatesManager: PredicatesManager
   ownershipPredicateAddress: Address
 
@@ -40,7 +40,7 @@ export class Chain {
     this.predicatesManager = new PredicatesManager()
     this.predicatesManager.addPredicate(options.OwnershipPredicate, 'OwnershipPredicate')
     this.ownershipPredicateAddress = this.predicatesManager.getNativePredicate('OwnershipPredicate')
-    this.segmentChecker = new SegmentChecker(this.predicatesManager)
+    this.segmentChecker = new StateManager(this.predicatesManager)
     this.blockHeight = 0
     this.db = db
     this.txQueue = []
@@ -100,9 +100,7 @@ export class Chain {
       return new ChamberResultError(ChainErrorFactory.NoValidTransactions())
     }
     const tasks = this.txQueue.map(async tx => {
-      const inputChecked = this.segmentChecker.isContain(tx)
-      if(inputChecked) {
-        this.segmentChecker.spend(tx)
+      if(this.segmentChecker.spend(tx).length > 0) {
         block.appendTx(tx)
       }
     })

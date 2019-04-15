@@ -28,7 +28,7 @@ const options = {
   // kovan
   // initialBlock: 10000000,
   initialBlock: process.env.INITIAL_BLOCK || 1,
-  interval: 20000,
+  interval: 10000,
   confirmation: process.env.CONFIRMATION || 0,
   OwnershipPredicate: '0x9FBDa871d559710256a2502A2517b794B482Db40'
 }
@@ -113,19 +113,25 @@ async function transfer(to: string, amount: string) {
 }
 
 async function balance() {
+  wallet.on('updated', async (e) => {
+    const result = await e.wallet.getBalance()
+    console.log('balance=', result.toNumber())
+  })
   await wallet.init()
   console.log('wallet initialized')
   await wallet.syncChildChain()
   console.log('wallet synced')
-  await waitUpdate()
   const result = await wallet.getBalance()
   console.log('balance=', result.toNumber())
-  finalize()
 }
 
 async function waitUpdate() {
   return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      resolve(wallet)
+    }, 15000)
     wallet.on('updated', async (e) => {
+      clearTimeout(timeout)
       resolve(e.wallet)
     })
   })
