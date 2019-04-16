@@ -237,8 +237,28 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 421275,
+      "gas": 411858,
       "signature": "0x03e99c63"
+    },
+    {
+      "name": "decodePredicate",
+      "outputs": [
+        {
+          "type": "address",
+          "name": "out"
+        }
+      ],
+      "inputs": [
+        {
+          "type": "bytes",
+          "name": "_state"
+        }
+      ],
+      "constant": true,
+      "payable": false,
+      "type": "function",
+      "gas": 779,
+      "signature": "0x041e5974"
     },
     {
       "name": "__init__",
@@ -282,7 +302,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 693,
+      "gas": 723,
       "signature": "0x10fe9ae8"
     },
     {
@@ -301,7 +321,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 179321,
+      "gas": 179351,
       "signature": "0x0717d7c3"
     },
     {
@@ -325,7 +345,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1429,
+      "gas": 1459,
       "signature": "0x33357249"
     },
     {
@@ -335,7 +355,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 180867,
+      "gas": 180927,
       "signature": "0xba0bba40"
     },
     {
@@ -350,7 +370,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 35957,
+      "gas": 35987,
       "signature": "0xac7475ed"
     },
     {
@@ -365,7 +385,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 77719,
+      "gas": 77749,
       "signature": "0xd9caa3d2"
     },
     {
@@ -375,7 +395,7 @@
       "constant": false,
       "payable": true,
       "type": "function",
-      "gas": 226727,
+      "gas": 226854,
       "signature": "0xd0e30db0"
     },
     {
@@ -398,7 +418,7 @@
       "constant": false,
       "payable": true,
       "type": "function",
-      "gas": 186260,
+      "gas": 186290,
       "signature": "0x9a38d633"
     },
     {
@@ -417,7 +437,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 229887,
+      "gas": 230014,
       "signature": "0x97feb926"
     },
     {
@@ -444,7 +464,7 @@
       "constant": false,
       "payable": true,
       "type": "function",
-      "gas": 1064908,
+      "gas": 1054472,
       "signature": "0x20ad2b3c"
     },
     {
@@ -481,13 +501,13 @@
         },
         {
           "type": "bytes",
-          "name": "_sig"
+          "name": "_deprecationWitness"
         }
       ],
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 432442,
+      "gas": 1131647,
       "signature": "0x9ab7b05e"
     },
     {
@@ -506,7 +526,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 80350,
+      "gas": 80380,
       "signature": "0x56256ff8"
     },
     {
@@ -520,13 +540,17 @@
         {
           "type": "uint256",
           "name": "_exitId"
+        },
+        {
+          "type": "bytes",
+          "name": "_exitStateBytes"
         }
       ],
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 288886,
-      "signature": "0x8903446e"
+      "gas": 326136,
+      "signature": "0xdfcb2363"
     },
     {
       "name": "challengeTooOldExit",
@@ -560,7 +584,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 156382,
+      "gas": 156300,
       "signature": "0xdbd39192"
     },
     {
@@ -579,7 +603,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 85228,
+      "gas": 85258,
       "signature": "0x1a8f4fd6"
     },
     {
@@ -607,7 +631,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 3688,
+      "gas": 3718,
       "signature": "0xe60f1ff1"
     },
     {
@@ -635,7 +659,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 3419,
+      "gas": 3449,
       "signature": "0x491e2183"
     },
     {
@@ -655,7 +679,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1336,
+      "gas": 1366,
       "signature": "0x86972254"
     },
     {
@@ -675,7 +699,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1366,
+      "gas": 1396,
       "signature": "0xc6c62390"
     },
     {
@@ -690,7 +714,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1263,
+      "gas": 1293,
       "signature": "0xec3e06d1"
     },
     {
@@ -710,7 +734,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1498,
+      "gas": 1528,
       "signature": "0x08e06ad2"
     },
     {
@@ -730,7 +754,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1534,
+      "gas": 1564,
       "signature": "0x7999fcc4"
     },
     {
@@ -750,7 +774,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1525,
+      "gas": 1555,
       "signature": "0x64138230"
     },
     {
@@ -765,7 +789,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1383,
+      "gas": 1413,
       "signature": "0xfbce3ef0"
     },
     {
@@ -780,7 +804,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1413,
+      "gas": 1443,
       "signature": "0xe3254108"
     },
     {
@@ -804,7 +828,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1769,
+      "gas": 1799,
       "signature": "0x7fb20917"
     },
     {
@@ -828,7 +852,7 @@
       "constant": true,
       "payable": false,
       "type": "function",
-      "gas": 1805,
+      "gas": 1835,
       "signature": "0x1829120a"
     }
   ],
