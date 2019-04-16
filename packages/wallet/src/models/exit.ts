@@ -5,15 +5,18 @@ export class Exit {
   id: BigNumber
   exitableAt: BigNumber
   segment: Segment
+  stateBytes: string
 
   constructor(
     id: BigNumber,
     exitableAt: BigNumber,
-    segment: Segment
+    segment: Segment,
+    stateBytes: string
   ) {
     this.id = id
     this.exitableAt = exitableAt
     this.segment = segment
+    this.stateBytes = stateBytes
   }
 
   getId(): string {
@@ -27,6 +30,10 @@ export class Exit {
     return this.exitableAt.toNumber() * 1000
   }
 
+  getStateBytes(): string {
+    return this.stateBytes
+  }
+
   getAmount(): number {
     return this.segment.getAmount().toNumber()
   }
@@ -35,7 +42,8 @@ export class Exit {
     return JSON.stringify({
       id: this.id.toString(),
       exitableAt: this.exitableAt.toString(),
-      segment: this.segment.serialize()
+      segment: this.segment.serialize(),
+      stateBytes: this.stateBytes
     })
   }
 
@@ -44,7 +52,8 @@ export class Exit {
     return new Exit(
       bigNumberify(data.id),
       bigNumberify(data.exitableAt),
-      Segment.deserialize(data.segment)
+      Segment.deserialize(data.segment),
+      data.stateBytes
     )
   }
 
