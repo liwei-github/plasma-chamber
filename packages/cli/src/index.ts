@@ -8,7 +8,7 @@ import { FileStorage } from './storage'
 import program from 'commander'
 import fs from 'fs'
 import path from 'path'
-import { utils } from 'ethers'
+import { constants, utils } from 'ethers'
 
 function getPrivateKey(): string {
   const privateKey = process.env.PRIVATE_KEY
@@ -30,7 +30,7 @@ const options = {
   initialBlock: process.env.INITIAL_BLOCK || 1,
   interval: 10000,
   confirmation: process.env.CONFIRMATION || 0,
-  OwnershipPredicate: '0x9FBDa871d559710256a2502A2517b794B482Db40'
+  OwnershipPredicate: constants.AddressZero
 }
 const basePath = path.join(__dirname, './.clidb')
 const persnalPath = path.join(basePath, address)
@@ -76,6 +76,23 @@ program
     await transfer(options.to, options.value)
     console.log('finished')
   })
+
+program
+  .command('exit')
+  .option('-i, --index <index>', 'index of utxos')
+  .action(async function(options) {
+    await startExit(options.index)
+    console.log('finished')
+  })
+
+program
+  .command('withdraw')
+  .option('-e, --exit <exit>', 'id of exit')
+  .action(async function(options) {
+    await finalizeExit(options.exit)
+    console.log('finished')
+  })
+
 
 program
   .command('merge')
@@ -149,6 +166,23 @@ async function merge() {
   await wallet.init()
   console.log('wallet initialized')
   const result = await wallet.merge()
+  console.log(result)
+  finalize()
+}
+
+async function startExit(index: number) {
+  await wallet.init()
+  console.log('wallet initialized')
+  const utxos = wallet.getUTXOArray()
+  const result = await wallet.exit(utxos[index])
+  console.log(result)
+  finalize()
+}
+
+async function finalizeExit(exitId: string) {
+  await wallet.init()
+  console.log('wallet initialized')
+  const result = await wallet.finalizeExit(exitId)
   console.log(result)
   finalize()
 }
