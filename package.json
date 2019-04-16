@@ -23,9 +23,12 @@
     "publish": "yarn build && lerna publish",
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
-    "docs": "lerna run docs"
+    "docs": "lerna run docs",
+    "lerna-semantic-release": "node_modules/lerna-semantic-release/packages/lerna-semantic-release/bin/lerna-semantic-release.js",
+    "semantic-release": "yarn lerna-semantic-release pre && yarn lerna-semantic-release post"
   },
   "dependencies": {
-    "lerna": "^3.10.5"
+    "lerna": "^3.10.5",
+    "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou"
   }
 }
