@@ -45,7 +45,7 @@ const abi = [
   'function deposit() payable',
   'function depositERC20(address token, uint256 amount) payable',
   'function exit(uint256 _utxoPos, uint256 _segment, bytes _txBytes, bytes _proof) payable',
-  'function finalizeExit(uint256 _exitableEnd, uint256 _exitId)',
+  'function finalizeExit(uint256 _exitableEnd, uint256 _exitId, bytes _exitStateBytes)',
   'function getExit(uint256 _exitId) constant returns(address, uint256)',
 ]
 
@@ -210,7 +210,7 @@ export class ChamberWallet extends EventEmitter {
       )
     })
     this.predicatesManager = new PredicatesManager()
-    this.predicatesManager.addPredicate(this.options.OwnershipPredicate, 'OwnershipPredicate')
+    this.predicatesManager.addPredicate(ethers.constants.AddressZero, 'OwnershipPredicate')
     this.stateManager = new StateManager(this.predicatesManager)
     this.segmentHistoryManager = new SegmentHistoryManager(storage, this.client, this.predicatesManager)
     this.plasmaSyncher.on('PlasmaBlockHeaderAdded', (e: any) => {
@@ -375,7 +375,8 @@ export class ChamberWallet extends EventEmitter {
       const exit = new Exit(
         exitId,
         exitableAt,
-        segment
+        segment,
+        utxo.getStateBytes()
       )
       this.storage.setExit(exit)
       this.emit('exitStarted', { wallet: this })
@@ -564,7 +565,8 @@ export class ChamberWallet extends EventEmitter {
     }
     const result = await this.rootChainContract.finalizeExit(
       this.exitableRangeManager.getExitableEnd(exit.segment.start, exit.segment.end),
-      exitId)
+      exitId,
+      exit.getStateBytes())
     await result.wait()
     this.storage.deleteExit(exit.getId())
     return new ChamberOk(exit)
@@ -787,7 +789,7 @@ export class ChamberWallet extends EventEmitter {
 
   async swapRequestRespond() {
     const targetBlock = ethers.utils.bigNumberify(this.getTargetBlockNumber())
-    const ownershipPredicateAddress = this.predicatesManager.getNativePredicate('OWnershipPredicate')
+    const ownershipPredicateAddress = this.predicatesManager.getNativePredicate('OwnershipPredicate')
     let swapRequests = await this.client.getSwapRequest()
     if(swapRequests.isError()) {
       return new ChamberResultError(WalletErrorFactory.SwapRequestError())
