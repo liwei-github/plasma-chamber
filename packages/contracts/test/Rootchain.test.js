@@ -240,6 +240,15 @@ contract("RootChain", ([alice, bob, operator, user4, user5, admin]) => {
         {
           from: operator
         }))
+      await increaseTime(duration.weeks(6))
+      await this.rootChain.finalizeExit(
+        exitableEnd,
+        exitId1,
+        depositTx.encode(),
+        {
+          from: bob
+        })
+
     })
 
     it("should success to challenge", async () => {
