@@ -343,7 +343,7 @@ export class ChamberWallet extends EventEmitter {
       this.flushCurrentState()
     }
     this.segmentHistoryManager.appendDeposit(depositTx)
-    this.exitableRangeManager.extendRight(end)
+    this.exitableRangeManager.insert(tokenId, start, end)
     this.storage.saveExitableRangeManager(this.exitableRangeManager)
     this.emit('deposited', { wallet: this, tx: depositTx})
     return depositTx
