@@ -239,7 +239,6 @@ export class ChamberWallet extends EventEmitter {
   async init() {
     await this.storage.init()
     const state: any[] = await this.storage.getState()
-    console.log(state)
     this.stateManager.deserialize(state)
     this.exitableRangeManager = await this.storage.loadExitableRangeManager()
     this.loadedBlockNumber = await this.storage.getLoadedPlasmaBlockNumber()

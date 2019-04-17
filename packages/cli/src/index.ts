@@ -61,6 +61,12 @@ program
   })
 
 program
+  .command('utxo')
+  .action(async function(options) {
+    await showUtxo()
+  })
+
+program
   .command('deposit')
   .option('-v, --value <value>', 'amount to deposit')
   .action(async function(options) {
@@ -115,13 +121,13 @@ async function deposit(amount: string) {
 }
 
 async function transfer(to: string, amount: string) {
-  console.log(to, amount)
+  console.log('to=', to, 'amount=',amount)
   await wallet.init()
   console.log('wallet initialized')
   await wallet.syncChildChain()
   console.log('wallet synced')
   const result = await wallet.transfer(to, 0, amount)
-  console.log(result)
+  console.log('result: ', result)
   console.log(`transfered ${amount} GWEI to ${to}.`)
   await waitUpdate()
   const balanceResult = await wallet.getBalance()
@@ -139,7 +145,22 @@ async function balance() {
   await wallet.syncChildChain()
   console.log('wallet synced')
   const result = await wallet.getBalance()
+  console.log('account=', wallet.getAddress())
   console.log('balance=', result.toNumber())
+}
+
+async function showUtxo() {
+  wallet.on('updated', async (e) => {
+    const result = await e.wallet.getBalance()
+    console.log('balance=', result.toNumber())
+  })
+  await wallet.init()
+  console.log('wallet initialized')
+  await wallet.syncChildChain()
+  console.log('wallet synced')
+  const result = wallet.getUTXOArray()
+  console.log('account=', wallet.getAddress())
+  console.log('utxo=', result.map(utxo => utxo.getSegment().pretty()))
 }
 
 async function waitUpdate() {
