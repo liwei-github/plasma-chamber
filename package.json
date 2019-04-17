@@ -29,9 +29,7 @@
     "format": "lerna run format",
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
-    "docs": "lerna run docs",
-    "lerna-semantic-release": "node_modules/lerna-semantic-release/packages/lerna-semantic-release/bin/lerna-semantic-release.js",
-    "semantic-release": "yarn lerna-semantic-release pre && yarn lerna-semantic-release post"
+    "docs": "lerna run docs"
   },
   "dependencies": {
     "lerna": "^3.10.5"
