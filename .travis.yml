@@ -9,7 +9,7 @@ cache:
 
 before_install:
   - pip install -U pip
-  - pip install vyper==0.1.0b6
+  - pip install vyper==0.1.0b9
   - vyper --version
   - nvm install v10.15.3
   - npm install -g yarn

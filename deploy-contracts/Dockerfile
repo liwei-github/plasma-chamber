@@ -3,7 +3,7 @@ FROM node:8.15.1-alpine AS builder
 RUN npm i lerna yarn truffle@4.1.15 -g
 RUN apk add python python3 make g++ zeromq-dev curl git
 RUN pip3 install --upgrade pip setuptools
-RUN pip3 install vyper==0.1.0b8
+RUN pip3 install vyper==0.1.0b9
 
 COPY packages packages
 COPY package.json package.json

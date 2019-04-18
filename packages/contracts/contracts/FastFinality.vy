@@ -139,7 +139,7 @@ def __init__(
   self.rootchain = _rootchain
   self.txverifier = _txverifier
   self.merchantNonce = 0
-  self.ffToken = create_with_code_of(_erc721)
+  self.ffToken = create_forwarder_to(_erc721)
   ERC721(self.ffToken).setup()
 
 @public
