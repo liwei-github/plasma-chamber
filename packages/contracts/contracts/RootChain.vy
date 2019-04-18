@@ -392,7 +392,7 @@ def __init__(
   self.verifierUtil = _verifierUtil
   self.serializer = _serializer
   self.txverifier = _txverifierAddress
-  self.exitToken = create_with_code_of(_exitToken)
+  self.exitToken = create_forwarder_to(_exitToken)
   self.checkpointAddress = _checkpointAddress
   ERC721(self.exitToken).setup()
   self.listingNonce = 0

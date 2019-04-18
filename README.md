@@ -70,7 +70,7 @@ You need to install them before deploying Plasma Chamber contracts.
 * ganache-cli latest version
     * You need to install npm or Yarn first 
     * how to install ganache-cli; https://github.com/trufflesuite/ganache-cli#installation 
-* Vyper 0.1.0b8
+* Vyper 0.1.0b9
     * You need to install Python v3 or higher into your OS first (make sure to check the prerequisites on the official installation doc; https://vyper.readthedocs.io/en/latest/installing-vyper.html#prerequisites)
     * how to install Vyper; https://vyper.readthedocs.io/en/latest/installing-vyper.html#installation
 * Other package management tools / Ethereum testing framework
