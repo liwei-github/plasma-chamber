@@ -14,18 +14,33 @@
     "node": ">=8"
   },
   "scripts": {
+    "postinstall": "yarn bootstrap",
     "bootstrap": "lerna bootstrap",
+    "postbootstrap": "cd node_modules/lerna-semantic-release && yarn install && cd ../..",
+    "commit": "npx git-cz",
+    "lerna-semantic-release": "node_modules/lerna-semantic-release/packages/lerna-semantic-release/bin/lerna-semantic-release.js",
+    "bump": "yarn lerna-semantic-release pre && yarn lerna-semantic-release post",
+    "publish": "yarn build && yarn lerna-semantic-release perform",
     "build": "lerna run build",
     "test": "lerna run test",
     "build:ci": "lerna run build:ci",
     "test:ci": "lerna run test:ci",
     "format": "lerna run format",
-    "publish": "yarn build && lerna publish",
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
     "docs": "lerna run docs"
   },
   "dependencies": {
     "lerna": "^3.10.5"
+  },
+  "devDependencies": {
+    "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou",
+    "cz-lerna-changelog": "^2.0.2",
+    "commitizen": "^3.0.7"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-lerna-changelog"
+    }
   }
 }
