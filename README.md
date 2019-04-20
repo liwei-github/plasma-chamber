@@ -131,7 +131,7 @@ You need envs described [here](https://github.com/cryptoeconomicslab/plasma-cham
 git clone https://github.com/cryptoeconomicslab/wallet.git
 cd wallet
 yarn install
-cp .env.example .env
+cp .env.sample .env
 yarn start
 ```
 
