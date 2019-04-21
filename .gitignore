@@ -7,3 +7,6 @@ coverage
 .db/*
 .plasmadb/*
 .env
+.nyc_output
+coverage.json
+lcov.info

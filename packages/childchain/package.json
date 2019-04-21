@@ -20,7 +20,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "mocha -r ts-node/register 'test/**/*.ts'",
     "pretest:ci": "tsc --build ./tsconfig-ci.json",
-    "test:ci": "yarn run test",
+    "test:ci": "nyc npm t",
     "docs": "typedoc --out ../../docs/childchain ./src"
   },
   "dependencies": {
@@ -29,10 +29,7 @@
     "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^5.2.5",
     "ethers": "^4.0.27",
-    "istanbul": "^0.4.5",
-    "istanbul-coveralls": "^1.0.3",
     "node-fetch": "^2.3.0",
-    "remap-istanbul": "^0.13.0",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "typescript": "^3.2.2"
@@ -42,6 +39,25 @@
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
     "mocha": "^6.0.2",
+    "nyc": "^14.0.0",
     "typedoc": "^0.14.2"
+  },
+  "nyc": {
+    "include": [
+      "src/*.ts",
+      "src/**/*.ts"
+    ],
+    "exclude": ["src/*.d.ts"],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "json"
+    ],
+    "sourceMap":true,
+    "all": true
   }
 }
