@@ -17,7 +17,8 @@
     "postinstall": "yarn bootstrap",
     "bootstrap": "lerna bootstrap",
     "postbootstrap": "cd node_modules/lerna-semantic-release && yarn install && cd ../..",
-    "commit": "npx git-cz",
+    "commit": "npx git-cz --no-verify",
+    "warn-commit": "echo '\n\n\n\n Use `yarn commit` \n\n\n\n' && exit 1",
     "lerna-semantic-release": "node_modules/lerna-semantic-release/packages/lerna-semantic-release/bin/lerna-semantic-release.js",
     "bump": "yarn lerna-semantic-release pre && yarn lerna-semantic-release post",
     "publish": "yarn build && yarn lerna-semantic-release perform",
@@ -36,8 +37,12 @@
   "devDependencies": {
     "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou",
     "cz-lerna-changelog": "^2.0.2",
-    "commitizen": "^3.0.7"
+    "commitizen": "^3.0.7",,
+    "pre-commit": "^1.2.2"
   },
+  "pre-commit": [
+    "warn-commit"
+  ],
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-lerna-changelog"
