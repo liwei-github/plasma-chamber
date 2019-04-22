@@ -1,12 +1,21 @@
 import { IStorage } from './IStorage'
+import indexedDB from 'fake-indexeddb'
+import localStorage from 'localStorage'
+
+let _indexedDB, _localStorage;
+if(typeof window !== 'undefined'){
+  _indexedDB = window.indexedDB,
+  _localStorage = window.localStorage
+}
+
 
 export class BrowserStorage implements IStorage {
   indexedDB: any
   db: IDBDatabase | null = null
 
   constructor(dbName?: string) {
-    this.indexedDB = window.indexedDB
-    const request = window.indexedDB.open(dbName || 'proof', 3);
+    this.indexedDB = indexedDB
+    const request = indexedDB.open(dbName || 'proof', 3);
     request.onerror = (event) => {
       console.error('error at opening indexedDB', event);
     };
@@ -26,12 +35,12 @@ export class BrowserStorage implements IStorage {
   }
 
   set(key: string, item: string) {
-    window.localStorage.setItem(key, item)
+    localStorage.setItem(key, item)
     return Promise.resolve(true)
   }
 
   get(key: string) {
-    const value = window.localStorage.getItem(key)
+    const value = localStorage.getItem(key)
     if(value !== null) {
       return Promise.resolve(value)
     } else {
@@ -40,7 +49,7 @@ export class BrowserStorage implements IStorage {
   }
 
   delete(key: string) {
-    window.localStorage.deleteItem(key)
+    localStorage.deleteItem(key)
     return Promise.resolve(true)
   }
 
