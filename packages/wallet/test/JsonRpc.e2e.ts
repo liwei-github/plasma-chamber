@@ -3,68 +3,28 @@ import {
   JsonRpcClient,
 } from '../src/client'
 import { assert } from "chai"
-import { CDP } from 'chrome-remote-interface'
+import CDP from 'chrome-remote-interface'
 
-const { Runtime } = new CDP()
-console.log(Runtime)
-
+// const injectScript = `
+// const client = new JsonRpcClient('https://google.com')
+// const methodName = ''
+// const args = []
+// let json = await client.request(methodName, args)
+// return json
+// `
+const injectScript = `return true`
 
 describe('JsonRpcClient', () => {
-  it('should run fetch on NodeJS', (done) => {
-    const client = new JsonRpcClient('endpoint')
-    const methodName = ''
-    const args = []
-    client.request(methodName, args).then(json=>{
-      assert.equal(0, 0)
-      done()
-    })
-  })
-  it('should run fetch on CommonJS', (done) => {
-    const script = ""
-    runBrowser(script, done).then(_=>{
-    })
-  })
+  it('should run fetch on NodeJS', async () => {
+    try {
+      const { Runtime } = await CDP()
+      const {result, exceptionDetails} = await Runtime.evaluate({
+        awaitPromise: true,
+        expression: `(async () => { ${injectScript} })()`
+      });
+      console.log('result, exceptionDetails:', result, exceptionDetails)
+    } catch(e) { 
+      console.log(e.message)
+    }
+  }).timeout(10000)
 })
-
-
-
-
-async function runBrowser(_script:string, done){
-  const Tester = require('chrome-tester');
-  const tester = new Tester();
-  await tester.init();
-  const job = {
-    url: 'localhost:8082',
-    tests: [
-      {
-        des: 'succ test',
-        script: _script
-      }
-    ]
-  }
-  const executor = await tester.exec(job);
-
-
-  const client = new JsonRpcClient('endpoint')
-  const methodName = ''
-  const args = []
-  executor.on('test-pass', (test, value) => {
-    client.request(methodName, args).then(json=>{
-      console.log('test-pass');
-      assert.equal(test.des, 'succ test');
-      assert.equal(value, true);
-      done()
-    })
-  });
-  executor.on('test-failed', (test, exceptionDetails) => {
-    client.request(methodName, args).then(json=>{
-      console.log('test-failed');
-      assert.equal(test.des, 'fail test');
-      assert.equal(exceptionDetails.exception.value, 1);
-      done()
-    })
-  });
-  await executor.wait();
-  const dom = await executor.getDOM();
-  await tester.destroy();
-}

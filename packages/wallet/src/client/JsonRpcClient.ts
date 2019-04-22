@@ -2,7 +2,6 @@ import * as e6p from 'es6-promise';
 (e6p as any).polyfill();
 import 'isomorphic-fetch';
 
-
 export interface INetworkClient {
   request(
     methodName: string,
