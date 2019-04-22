@@ -38,6 +38,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
     "chrome-remote-interface": "^0.27.1",
+    "dotenv": "^7.0.0",
     "es6-promise": "^4.2.6",
     "ethers": "^4.0.27",
     "fake-indexeddb": "^2.1.0",

@@ -26,8 +26,10 @@ export default class WalletFactory {
   OWNERSHIP_PREDICATE, ROOTCHAIN_ENDPOINT, ROOTCHAIN_ADDRESS
   */
   constructor(
-    childchainEndpoint:string, childchainPubsubEndpoint:string, initialBlock:number, confirmation:number,
-    ownershipPredicate:string, rootchainEndpoint:string, rootchainAddress:string
+    childchainEndpoint:string | undefined, childchainPubsubEndpoint:string | undefined,
+    initialBlock:number | undefined, confirmation:number | undefined,
+    ownershipPredicate:string,
+    rootchainEndpoint:string, rootchainAddress:string
   ){
     this.childchainEndpoint = childchainEndpoint || 'http://localhost:3000'
     this.childchainPubsubEndpoint = childchainPubsubEndpoint || this.childchainEndpoint
@@ -58,7 +60,7 @@ export default class WalletFactory {
         privateKey,
         options
       )
-      ;if(typeof window === 'undefined') { (window as any).wallet = wallet }
+      ;if(typeof window !== 'undefined') { (window as any).wallet = wallet }
       this.storage.set('privateKey', privateKey)
       return wallet
     } catch (e) {
