@@ -1,7 +1,5 @@
 import { describe, it } from "mocha"
-import {
-  JsonRpcClient,
-} from '../src/client'
+import { JsonRpcClient } from '../src/client'
 import { assert } from "chai"
 import CDP from 'chrome-remote-interface'
 
