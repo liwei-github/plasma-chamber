@@ -243,3 +243,12 @@ After we release our first demo, we would like ask Dapps developers across the w
 - BlockExplorer<br>
 - Deployer: must return SDK and Documentation<br>
 - UserExperienceTarget: 5 days for deploy<br>
+
+
+# Contribution
+- `plasma-chamber` is a Commitizen-friendly repository.
+- `yarn commit` enforces commit message patterns to keep release notes and monorepo versioning organized.
+- `lerna` is running on `independent-mode`, so each package has `semver`-based version.
+- `yarn bump` automatically increments the version of each package. This incrementation rule is supported by `lerna-semantic-release`. Flags mentioned below are interactively asked via `yarn commit`; `breaking` flag increments major version. `feat` flag increments minor version. `fix` flag increments major version.
+- Also, `yarn bump` additionally generates `CHANGELOG.md` under each package without commits to Git. Please make sure to paste them on Github release.
+- `yarn publish` will publish each package to npm.
