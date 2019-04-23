@@ -22,6 +22,7 @@
     "mock:kill": "kill $(pgrep -f 'Chrome --headless --remote-debugging-port=9222')",
     "test": "mocha --exit -r ts-node/register 'test/**/*.ts'",
     "test:dev": "yarn mock:kill || true && yarn mock:run && yarn build:dev && yarn test",
+    "pretest:ci": "tsc --build ./tsconfig-ci.json",
     "test:ci": "nyc npm t",
     "docs": "typedoc --out ../../docs/wallet ./src"
   },
