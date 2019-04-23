@@ -14,7 +14,7 @@ before_install:
   - nvm install v10.15.3
   - npm install -g yarn
   - npm install -g lerna
-  - google-chrome --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
 
 install:
   - lerna bootstrap
@@ -27,4 +27,4 @@ dist: trusty
 sudo: false
 
 addons:
-  chrome: beta
+  chrome: stable
