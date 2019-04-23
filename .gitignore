@@ -8,3 +8,6 @@ coverage
 .plasmadb/*
 .env
 CHANGELOG.md
+.nyc_output
+coverage.json
+lcov.info

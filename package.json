@@ -25,7 +25,7 @@
     "build": "lerna run build",
     "test": "lerna run test",
     "build:ci": "lerna run build:ci",
-    "test:ci": "lerna run test:ci",
+    "test:ci": "lerna run test:ci && mkdir -p ./coverage && node scripts/collect.js && nyc merge ./coverage ./coverage/coverage.json && node scripts/remap.js && cat coverage/lcov.info | coveralls",
     "format": "lerna run format",
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
@@ -38,7 +38,10 @@
     "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou",
     "cz-lerna-changelog": "^2.0.2",
     "commitizen": "^3.0.7",
-    "pre-commit": "^1.2.2"
+    "pre-commit": "^1.2.2",
+    "remap-istanbul": "^0.13.0",
+    "coveralls": "^3.0.3",
+    "nyc": "^14.0.0"
   },
   "pre-commit": [
     "warn-commit"
