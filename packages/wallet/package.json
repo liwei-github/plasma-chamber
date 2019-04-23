@@ -21,7 +21,6 @@
     "mock:run": "./chrome.sh &",
     "mock:kill": "kill $(pgrep -f 'Chrome --headless --remote-debugging-port=9222')",
     "test": "yarn build:dev && yarn mock:kill || true && yarn mock:run && mocha --exit -r ts-node/register 'test/**/*.ts'",
-    "pretest:ci": "tsc --build ./tsconfig-ci.json",
     "test:ci": "nyc npm t",
     "docs": "typedoc --out ../../docs/wallet ./src"
   },
@@ -43,13 +42,10 @@
     "ethers": "^4.0.27",
     "fake-indexeddb": "^2.1.0",
     "isomorphic-fetch": "2.2.1",
-    "istanbul": "^0.4.5",
-    "istanbul-coveralls": "^1.0.3",
     "js-logger": "^1.6.0",
     "localStorage": "^1.0.4",
     "mqtt": "^2.18.8",
     "node-fetch": "^2.3.0",
-    "remap-istanbul": "^0.13.0",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "typescript": "^3.2.2"
