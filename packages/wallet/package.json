@@ -35,6 +35,7 @@
     "@types/mocha": "^5.2.5",
     "@types/mqtt": "^2.5.0",
     "@types/node-fetch": "^2.1.4",
+    "@types/fake-indexeddb":"^0.27.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
