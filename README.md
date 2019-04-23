@@ -246,8 +246,9 @@ After we release our first demo, we would like ask Dapps developers across the w
 
 
 # Contribution
-- This repository is already commitizen-friendly.
-- `yarn commit` enforces you conventional commit due to keep release note and monorepo versioning clean.
-- `lerna` is running on `independent-mode`, so each packages has `semver`-based version.
-- `yarn bump` automatically increments version of each pkgs. This incrementation rule depends on `lerna-semantic-release`. These flag is interactively asked via `yarn commit` though, as a summary: `affected:` flag narrows down `relevant commits`. `breaking` flag increments major version. `feat` flag increments minor version. `fix` flag increments major version. `yarn bump` additionally generates `CHANGELOG.md` under each pkgs without commiting to git. Please make use of it by pasting on github release.
-- `yarn publish` will publish each pkgs to npm.
+- `plasma-chamber` is a Commitizen-friendly repository.
+- `yarn commit` enforces commit message patterns to keep release notes and monorepo versioning organized.
+- `lerna` is running on `independent-mode`, so each package has `semver`-based version.
+- `yarn bump` automatically increments the version of each package. This incrementation rule is supported by `lerna-semantic-release`. Flags mentioned below are interactively asked via `yarn commit`; `breaking` flag increments major version. `feat` flag increments minor version. `fix` flag increments major version.
+- Also, `yarn bump` additionally generates `CHANGELOG.md` under each package without commits to Git. Please make sure to paste them on Github release.
+- `yarn publish` will publish each package to npm.
