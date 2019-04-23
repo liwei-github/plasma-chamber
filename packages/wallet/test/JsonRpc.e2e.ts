@@ -28,7 +28,10 @@ describe('JsonRpcClient', () => {
   }).timeout(10000)
   it('should run eth_blockNumber on NodeJS', async () => {
     try {
-      const blkHex = await eval(`(async () => { ${injectScript} })()`)
+      const client = new JsonRpcClient('https://kovan.infura.io/v3/12abea2d0fff436184cd78750a4e1966')
+      const methodName = 'eth_blockNumber'
+      const args = []
+      let { result: blkHex } = await client.request(methodName, args)
       assert.equal(parseInt(blkHex) > 0, true)
     } catch(e) { 
       throw new Error(e.message)
