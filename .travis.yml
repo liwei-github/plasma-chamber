@@ -2,6 +2,9 @@ language: python
 python:
   - "3.6"
 
+env:
+  - NODE_ENV=ci
+
 cache:
   bundler: true
   directories:
