@@ -20,6 +20,7 @@ install:
 
 script:
   - yarn build:ci
+  - yarn lint:ci
   - yarn test:ci
 
 dist: trusty

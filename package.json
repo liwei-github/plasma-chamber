@@ -29,15 +29,21 @@
     "format": "lerna run format",
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
-    "docs": "lerna run docs"
+    "docs": "lerna run docs",
+    "lint": "tslint 'packages/**/src/**/*.ts' 'packages/**/test/**/*.ts'",
+    "lint:ci": "tslint 'packages/**/src/**/*.ts' 'packages/**/test/**/*.ts'"
   },
   "dependencies": {
     "lerna": "^3.10.5"
   },
   "devDependencies": {
-    "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou",
-    "cz-lerna-changelog": "^2.0.2",
     "commitizen": "^3.0.7",
+    "cz-lerna-changelog": "^2.0.2",
+    "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou",
+    "prettier": "^1.17.0",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.0.1",
     "pre-commit": "^1.2.2",
     "remap-istanbul": "^0.13.0",
     "coveralls": "^3.0.3",
