@@ -39,7 +39,7 @@
   "devDependencies": {
     "commitizen": "^3.0.7",
     "cz-lerna-changelog": "^2.0.2",
-    "lerna-semantic-release": "git+ssh://github.com/reywright/lerna-semantic-release.git#caribou",
+    "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou",
     "prettier": "^1.17.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
