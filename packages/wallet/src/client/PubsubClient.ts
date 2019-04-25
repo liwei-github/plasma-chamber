@@ -1,5 +1,5 @@
 import * as mqtt from 'mqtt'
-import { MqttClient } from 'mqtt'
+import MqttClient = mqtt.MqttClient
 import { EventEmitter } from 'events'
 
 export interface IPubsubClient {

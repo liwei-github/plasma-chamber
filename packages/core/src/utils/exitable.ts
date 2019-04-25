@@ -25,7 +25,7 @@ export class ExitableRangeManager {
 
   public withRanges(ranges: Segment[]) {
     this.ranges = ranges
-    if (this.ranges.length == 0) {
+    if (this.ranges.length === 0) {
       // if ranges has no item, push empty range
       this.ranges.push(ExitableRangeManager.emptyRange())
     }
@@ -36,17 +36,17 @@ export class ExitableRangeManager {
     return this.ranges.map(range => range.serialize())
   }
 
-  insert(tokenId: BigNumber, start: BigNumber, end: BigNumber) {
+  public insert(tokenId: BigNumber, start: BigNumber, end: BigNumber) {
     const leftMostRange = this.getExitableRangeByEnd(start)
-    if(leftMostRange) {
+    if (leftMostRange) {
       leftMostRange.end = end
     } else {
       this.ranges.push(new Segment(tokenId, start, end))
       this.sort()
     }
   }
-  
-  remove(tokenId: BigNumber, start: BigNumber, end: BigNumber) {
+
+  public remove(tokenId: BigNumber, start: BigNumber, end: BigNumber) {
     const exitableRange = this.getExitableRange(start, end)
     if (exitableRange.start.lt(start)) {
       this.insert(tokenId, exitableRange.start, start)
@@ -59,6 +59,20 @@ export class ExitableRangeManager {
     this.sort()
   }
 
+  public getExitableRange(start: BigNumber, end: BigNumber) {
+    const ranges = this.ranges.filter(r => {
+      return r.start.lte(start) && r.end.gte(end)
+    })
+    if (ranges.length !== 1) {
+      throw new Error('exitable ranges not found')
+    }
+    return ranges[0]
+  }
+
+  public getExitableEnd(start: BigNumber, end: BigNumber): BigNumber {
+    return this.getExitableRange(start, end).end
+  }
+
   private removeItem(start: BigNumber, end: BigNumber) {
     this.ranges = this.ranges.filter(r => {
       return !(r.start.lte(start) && r.end.gte(end))
@@ -67,12 +81,18 @@ export class ExitableRangeManager {
 
   private sort() {
     this.ranges.sort((a, b) => {
-      if(a.tokenId.gt(b.tokenId)) return 1
-      else if(a.tokenId.lt(b.tokenId)) return -1
-      else {
-        if(a.start.gt(b.start)) return 1
-        else if(a.start.lt(b.start)) return -1
-        else return 0
+      if (a.tokenId.gt(b.tokenId)) {
+        return 1
+      } else if (a.tokenId.lt(b.tokenId)) {
+        return -1
+      } else {
+        if (a.start.gt(b.start)) {
+          return 1
+        } else if (a.start.lt(b.start)) {
+          return -1
+        } else {
+          return 0
+        }
       }
     })
   }
@@ -83,19 +103,4 @@ export class ExitableRangeManager {
     })
     return ranges[0]
   }
-
-  getExitableRange(start: BigNumber, end: BigNumber) {
-    const ranges = this.ranges.filter(r => {
-      return r.start.lte(start) && r.end.gte(end)
-    })
-    if (ranges.length != 1) {
-      throw new Error('exitable ranges not found')
-    }
-    return ranges[0]
-  }
-
-  public getExitableEnd(start: BigNumber, end: BigNumber): BigNumber {
-    return this.getExitableRange(start, end).end
-  }
-
 }

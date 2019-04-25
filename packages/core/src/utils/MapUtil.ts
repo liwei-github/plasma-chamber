@@ -9,7 +9,7 @@ export class MapUtil {
 
   public static deserialize<T>(serialized: any) {
     const map = new Map<string, T>()
-    for (const key in serialized) {
+    for (const key of Object.keys(serialized)) {
       map.set(key, serialized[key])
     }
     return map

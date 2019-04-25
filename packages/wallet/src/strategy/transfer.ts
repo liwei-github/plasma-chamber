@@ -20,18 +20,18 @@ export class TransferAlgorithm {
     feeTo?: Address,
     fee?: BigNumber
   ): SignedTransaction | null {
-    let tx: SignedTransaction | null = null
+    let transferTx: SignedTransaction | null = null
     const targetBlock = utils.bigNumberify(targetBlockNumber)
     utxos
-      .filter(_tx =>
-        _tx
+      .filter(tx =>
+        tx
           .getOutput()
           .getSegment()
           .getTokenId()
           .eq(tokenId)
       )
-      .forEach(_tx => {
-        const output = _tx.getOutput()
+      .forEach(tx => {
+        const output = tx.getOutput()
         const segment = output.getSegment()
         const sum = amount.add(fee || 0)
         if (segment.getAmount().gte(sum)) {
@@ -53,12 +53,12 @@ export class TransferAlgorithm {
               ownershipPredicate,
               feeTo
             )
-            tx = new SignedTransaction([paymentTx, feeTx])
+            transferTx = new SignedTransaction([paymentTx, feeTx])
           } else {
-            tx = new SignedTransaction([paymentTx])
+            transferTx = new SignedTransaction([paymentTx])
           }
         }
       })
-    return tx
+    return transferTx
   }
 }

@@ -1,7 +1,6 @@
 import { utils } from 'ethers'
 import BigNumber = utils.BigNumber
 
-
 /**
  * bignumTo8BytesBuffer
  * @param {BigNumber} bn

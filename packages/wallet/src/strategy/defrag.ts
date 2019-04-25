@@ -19,17 +19,17 @@ export class DefragAlgorithm {
     ownershipPredicate: string,
     myAddress: Address
   ): StateUpdate | null {
-    let tx = null
+    let mergeTx = null
     const segmentEndMap = new Map<string, SignedTransactionWithProof>()
-    utxos.forEach(_tx => {
-      const segment = _tx.getOutput().getSegment()
+    utxos.forEach(tx => {
+      const segment = tx.getOutput().getSegment()
       const start = segment.start.toString()
       const end = segment.end.toString()
       const tx2 = segmentEndMap.get(start)
       if (tx2) {
         // _tx and segmentStartMap.get(start) are available for merge transaction
-        tx = OwnershipPredicate.create(
-          _tx
+        mergeTx = OwnershipPredicate.create(
+          tx
             .getOutput()
             .getSegment()
             .add(tx2.getOutput().getSegment()),
@@ -38,9 +38,9 @@ export class DefragAlgorithm {
           myAddress
         )
       }
-      segmentEndMap.set(end, _tx)
+      segmentEndMap.set(end, tx)
     })
-    return tx
+    return mergeTx
   }
 
   /**
@@ -73,8 +73,8 @@ export class DefragAlgorithm {
     swapRequest: SwapRequest
   ): StateUpdate[] {
     return utxos
-      .filter(_tx => {
-        const segment = _tx.getOutput().getSegment()
+      .filter(tx => {
+        const segment = tx.getOutput().getSegment()
         return swapRequest.check(segment)
       })
       .map(s => s.getOutput())
@@ -89,8 +89,8 @@ export class DefragAlgorithm {
     utxos: SignedTransactionWithProof[],
     neighbor: Segment
   ): SignedTransactionWithProof[] {
-    return utxos.filter(_tx => {
-      const segment = _tx.getOutput().getSegment()
+    return utxos.filter(tx => {
+      const segment = tx.getOutput().getSegment()
       return neighbor.end.lt(segment.start)
     })
   }

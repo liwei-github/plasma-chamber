@@ -1,7 +1,7 @@
 import * as ethers from 'ethers'
 import * as Logger from 'js-logger'
 import EventEmitter from 'events'
-import { PlasmaClient, FastTransferResponse } from './client'
+import { PlasmaClient } from './client'
 import { IStorage } from './storage/IStorage'
 import { EventWatcher } from '@layer2/events-watcher'
 import { WalletStorage } from './storage/WalletStorage'
@@ -27,14 +27,15 @@ import {
   WaitingBlockWrapper,
   TokenType,
   UserAction,
-  UserActionUtil
+  UserActionUtil,
+  FastTransferResponse
 } from './models'
 import Contract = ethers.Contract
 import { BigNumber } from 'ethers/utils'
 import { PlasmaSyncher } from './client/PlasmaSyncher'
 import { StateManager } from './StateManager'
 import artifact from './assets/RootChain.json'
-import { SegmentHistoryManager } from './history/SegmentHistory'
+import { SegmentHistoryManager } from './history'
 import { DefragAlgorithm } from './strategy/defrag'
 import { TransferAlgorithm } from './strategy/transfer'
 if (!artifact.abi) {

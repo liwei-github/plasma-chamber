@@ -26,7 +26,7 @@
     "test": "lerna run test",
     "build:ci": "lerna run build:ci",
     "test:ci": "lerna run test:ci && mkdir -p ./coverage && node scripts/collect.js && nyc merge ./coverage ./coverage/coverage.json && node scripts/remap.js && cat coverage/lcov.info | coveralls",
-    "format": "lerna run format",
+    "format": "tslint --fix 'packages/**/src/**/*.ts' 'packages/**/test/**/*.ts'",
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
     "docs": "lerna run docs",

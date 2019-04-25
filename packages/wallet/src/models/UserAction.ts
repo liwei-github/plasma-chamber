@@ -26,12 +26,12 @@ export class UserActionUtil {
     tx: SignedTransactionWithProof
   ) {
     let address
-    if (type == 'transfer') {
+    if (type === 'transfer') {
       address = tx
         .getSignedTx()
         .getStateUpdate(0)
         .getOwner()
-    } else if (type == 'receive') {
+    } else if (type === 'receive') {
       address = tx.getOutput().getOwner()
     }
     return {
