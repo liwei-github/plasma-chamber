@@ -1,36 +1,38 @@
-import { utils } from 'ethers';
+import { utils } from 'ethers'
 import BigNumber = utils.BigNumber
-import { Segment } from '../segment';
+import { Segment } from '../segment'
 
 export class ExitableRangeManager {
-  ranges: Segment[]
+  public static emptyRange() {
+    return new Segment(
+      utils.bigNumberify(0),
+      utils.bigNumberify(0),
+      utils.bigNumberify(0)
+    )
+  }
+
+  public static deserialize(arr: any[]) {
+    return new ExitableRangeManager().withRanges(
+      arr.map(s => Segment.deserialize(s))
+    )
+  }
+  public ranges: Segment[]
 
   constructor() {
     this.ranges = []
     this.ranges.push(ExitableRangeManager.emptyRange())
   }
 
-  withRanges(ranges: Segment[]) {
+  public withRanges(ranges: Segment[]) {
     this.ranges = ranges
-    if(this.ranges.length == 0) {
+    if (this.ranges.length == 0) {
       // if ranges has no item, push empty range
       this.ranges.push(ExitableRangeManager.emptyRange())
     }
     return this
   }
 
-  static emptyRange() {
-    return new Segment(
-      utils.bigNumberify(0),
-      utils.bigNumberify(0),
-      utils.bigNumberify(0))
-  }
-
-  static deserialize(arr: any[]) {
-    return new ExitableRangeManager().withRanges(arr.map(s => Segment.deserialize(s)))
-  }
-
-  serialize() {
+  public serialize() {
     return this.ranges.map(range => range.serialize())
   }
 
@@ -46,12 +48,12 @@ export class ExitableRangeManager {
   
   remove(tokenId: BigNumber, start: BigNumber, end: BigNumber) {
     const exitableRange = this.getExitableRange(start, end)
-    if(exitableRange.start.lt(start)) {
+    if (exitableRange.start.lt(start)) {
       this.insert(tokenId, exitableRange.start, start)
     }
-    if(exitableRange.end.gt(end)) {
+    if (exitableRange.end.gt(end)) {
       exitableRange.start = end
-    }else{
+    } else {
       this.removeItem(start, end)
     }
     this.sort()
@@ -86,13 +88,13 @@ export class ExitableRangeManager {
     const ranges = this.ranges.filter(r => {
       return r.start.lte(start) && r.end.gte(end)
     })
-    if(ranges.length != 1) {
+    if (ranges.length != 1) {
       throw new Error('exitable ranges not found')
     }
     return ranges[0]
   }
-  
-  getExitableEnd(start: BigNumber, end: BigNumber): BigNumber {
+
+  public getExitableEnd(start: BigNumber, end: BigNumber): BigNumber {
     return this.getExitableRange(start, end).end
   }
 
