@@ -17,14 +17,15 @@
     "postinstall": "yarn bootstrap",
     "bootstrap": "lerna bootstrap",
     "postbootstrap": "cd node_modules/lerna-semantic-release && yarn install && cd ../..",
-    "commit": "npx git-cz",
+    "commit": "npx git-cz --no-verify",
+    "warn-commit": "echo '\n\n\n\n Use `yarn commit` \n\n\n\n' && exit 1",
     "lerna-semantic-release": "node_modules/lerna-semantic-release/packages/lerna-semantic-release/bin/lerna-semantic-release.js",
     "bump": "yarn lerna-semantic-release pre && yarn lerna-semantic-release post",
     "publish": "yarn build && yarn lerna-semantic-release perform",
     "build": "lerna run build",
     "test": "lerna run test",
     "build:ci": "lerna run build:ci",
-    "test:ci": "lerna run test:ci",
+    "test:ci": "lerna run test:ci && mkdir -p ./coverage && node scripts/collect.js && nyc merge ./coverage ./coverage/coverage.json && node scripts/remap.js && cat coverage/lcov.info | coveralls",
     "format": "lerna run format",
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
@@ -38,12 +39,19 @@
   "devDependencies": {
     "commitizen": "^3.0.7",
     "cz-lerna-changelog": "^2.0.2",
-    "lerna-semantic-release": "git://github.com/reywright/lerna-semantic-release.git#caribou",
+    "lerna-semantic-release": "git+ssh://github.com/reywright/lerna-semantic-release.git#caribou",
     "prettier": "^1.17.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.0.1"
+    "tslint-plugin-prettier": "^2.0.1",
+    "pre-commit": "^1.2.2",
+    "remap-istanbul": "^0.13.0",
+    "coveralls": "^3.0.3",
+    "nyc": "^14.0.0"
   },
+  "pre-commit": [
+    "warn-commit"
+  ],
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-lerna-changelog"
