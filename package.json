@@ -30,8 +30,8 @@
     "start": "node app",
     "docs:wallet": "typedoc --out ./docs ./packages/chamber-wallet/src",
     "docs": "lerna run docs",
-    "lint": "tslint 'packages/**/*.ts'",
-    "lint:ci": "tslint 'packages/**/*.ts'"
+    "lint": "tslint 'packages/**/src/**/*.ts' 'packages/**/test/**/*.ts'",
+    "lint:ci": "tslint 'packages/**/src/**/*.ts' 'packages/**/test/**/*.ts'"
   },
   "dependencies": {
     "lerna": "^3.10.5"
