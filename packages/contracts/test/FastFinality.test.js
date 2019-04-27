@@ -242,7 +242,24 @@ contract("FastFinality", ([alice, bob, operator, merchant, user5, admin]) => {
         })
     });
 
-    it('should be failed to challenge', async () => {
+    it('should be fail to challenge with invalid proof', async () => {
+      const tx = Scenario3.blocks[0].block.getSignedTransactionWithProof(
+        Scenario3.blocks[0].transactions[0].hash())[0]
+      const invalidTx = Scenario3.blocks[1].block.getSignedTransactionWithProof(
+        Scenario3.blocks[1].transactions[0].hash())[0]
+      
+      await assertRevert(this.fastFinality.challenge(
+        tx.getTxBytes(),
+        invalidTx.getProofAsHex(),
+        2,
+        Scenario3.segments[1].toBigNumber(),
+        {
+          from: operator,
+          gas: '500000'
+        }))
+    })
+
+    it('should be fail to challenge', async () => {
       const invalidTx = Scenario3.blocks[1].block.getSignedTransactionWithProof(
         Scenario3.blocks[1].transactions[0].hash())[0]
       
