@@ -1,5 +1,5 @@
 import { describe, it } from 'mocha'
-import { SegmentHistoryManager } from '../src/history/SegmentHistory'
+import { SegmentHistoryManager } from '../src/history/SegmentHistoryManager'
 import { MockStorage } from '../src/storage/MockStorage'
 import { PlasmaClient } from '../src/client'
 import { MockNetworkClient } from './mock/MockNetworkClient'

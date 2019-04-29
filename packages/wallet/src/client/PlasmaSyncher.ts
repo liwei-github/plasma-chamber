@@ -5,10 +5,7 @@ import { WalletStorage } from '../storage/WalletStorage'
 import { Address, Block, MapUtil } from '@layer2/core'
 import { WaitingBlockWrapper } from '../models'
 import artifact from '../assets/RootChain.json'
-import {
-  EventWatcher,
-  ETHEventAdaptor
-} from '@layer2/events-watcher'
+import { EventWatcher, ETHEventAdaptor } from '@layer2/events-watcher'
 import { WalletEventWatcherStorage } from '../storage/WalletEventWatcherStorage'
 import { EventEmitter } from 'events'
 if (!artifact.abi) {
