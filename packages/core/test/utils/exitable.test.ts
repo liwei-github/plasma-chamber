@@ -90,7 +90,9 @@ describe('ExitableRangeManager', () => {
     exitableRangeManager.insert(bn0, bn3000000, utils.bigNumberify('5000000'))
     try {
       exitableRangeManager.remove(bn0, bn1000000, bn2000000)
-    } catch (e) {}
+    } catch (e) {
+      assert.isNotNull(e)
+    }
     exitableRangeManager.remove(bn0, bn2000000, bn3000000)
     assert.equal(
       exitableRangeManager
@@ -107,7 +109,8 @@ describe('ExitableRangeManager', () => {
     exitableRangeManager.insert(bn0, bn1000000, bn2000000)
     assert.equal(
       exitableRangeManager.getExitableEnd(bn1000000, bn2000000).toString(),
-      bn2000000.toString())
+      bn2000000.toString()
+    )
   })
 
   it('shoud be succeeded to serialize and deserialize', () => {

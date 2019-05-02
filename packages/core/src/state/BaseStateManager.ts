@@ -123,7 +123,7 @@ export class BaseStateManager {
           deprecationWitness,
           this.predicatesManager
         )
-      }).length == targets.length && targets.length > 0
+      }).length === targets.length && targets.length > 0
     )
   }
 

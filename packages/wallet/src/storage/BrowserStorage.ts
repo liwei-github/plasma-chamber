@@ -68,10 +68,10 @@ export class BrowserStorage implements IStorage {
       .objectStore(storeName)
       .get(key + '.' + blkNum)
     return new Promise((resolve, reject) => {
-      request.onerror = function(event) {
+      request.onerror = event => {
         reject(event)
       }
-      request.onsuccess = function(event) {
+      request.onsuccess = event => {
         try {
           resolve(request.result.value)
         } catch (e) {
@@ -101,10 +101,10 @@ export class BrowserStorage implements IStorage {
       .objectStore(storeName)
       .get(blkNum)
     return new Promise((resolve, reject) => {
-      request.onerror = function(event) {
+      request.onerror = event => {
         reject(event)
       }
-      request.onsuccess = function(event) {
+      request.onsuccess = event => {
         resolve(request.result.value)
       }
     })
@@ -122,7 +122,7 @@ export class BrowserStorage implements IStorage {
         .transaction(storeName, 'readonly')
         .objectStore(storeName)
         .index('blkNum')
-        .openCursor(range).onsuccess = function(event) {
+        .openCursor(range).onsuccess = event => {
         const cursor = (event.target as IDBRequest).result
         if (cursor) {
           proofs.push(cursor.value)
@@ -160,7 +160,7 @@ export class BrowserStorage implements IStorage {
         .transaction(storeName, 'readonly')
         .objectStore(storeName)
         .index('blkNum')
-        .openCursor(range).onsuccess = function(event) {
+        .openCursor(range).onsuccess = event => {
         const cursor = (event.target as IDBRequest).result
         if (cursor) {
           proofs.push(cursor.value)

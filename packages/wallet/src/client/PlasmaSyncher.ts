@@ -5,45 +5,11 @@ import { WalletStorage } from '../storage/WalletStorage'
 import { Address, Block, MapUtil } from '@layer2/core'
 import { WaitingBlockWrapper } from '../models'
 import artifact from '../assets/RootChain.json'
-import {
-  IEventWatcherStorage,
-  EventWatcher,
-  ETHEventAdaptor
-} from '@layer2/events-watcher'
-import { IStorage } from '../storage/IStorage'
+import { EventWatcher, ETHEventAdaptor } from '@layer2/events-watcher'
+import { WalletEventWatcherStorage } from '../storage/WalletEventWatcherStorage'
 import { EventEmitter } from 'events'
 if (!artifact.abi) {
   console.error('ABI not found')
-}
-
-export class WalletEventWatcherStorage implements IEventWatcherStorage {
-  public storage: IStorage
-  private seen: { [key: string]: boolean } = {}
-
-  constructor(storage: IStorage) {
-    this.storage = storage
-  }
-
-  public async getLoaded(initialBlock: number) {
-    try {
-      const loaded = await this.storage.get('loaded')
-      return parseInt(loaded)
-    } catch (e) {
-      return initialBlock
-    }
-  }
-
-  public async setLoaded(loaded: number) {
-    this.storage.set('loaded', loaded.toString())
-  }
-
-  public addSeen(event: string) {
-    this.seen[event] = true
-  }
-
-  public getSeen(event: string) {
-    return this.seen[event]
-  }
 }
 
 export class PlasmaSyncher extends EventEmitter {

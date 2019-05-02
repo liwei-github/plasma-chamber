@@ -19,5 +19,4 @@ export * from './utils/exitable'
 export * from './utils/result'
 export * from './utils/MapUtil'
 
-export * from './models/swap'
-export * from './models/SegmentedBlock'
+export * from './models'
